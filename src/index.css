@@ -1,3 +1,4 @@
 @import "components/app/app.css";
 @import "components/app/toolbar/toolbar.css";
+@import "components/app/toolbar/button/button.css";
 @import "components/app/canvas/canvas.css";

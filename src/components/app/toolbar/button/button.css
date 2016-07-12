@@ -1,0 +1,26 @@
+.c-app-toolbar-button {
+  padding: 0px;
+  margin: 0;
+  border: 0 none;
+  display: block;
+  background: transparent;
+  border-bottom: 1px solid #ccc;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  outline: none;
+
+  &:hover {
+    background: rgba(0, 0, 0, .05);
+  }
+
+  & svg {
+    display: block;
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+    fill: #d4d4d4;
+    stroke: #666;
+    stroke-width: 6px;
+  }
+}
