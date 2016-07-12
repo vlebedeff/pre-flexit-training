@@ -1,28 +1,20 @@
 import * as React from "react";
 
 import {Point} from "../../../utils/geometry/point";
+import {Canvas} from "../../../models/canvas";
+import {CanvasElement} from "../../../models/canvas_element";
+
+import {ElementComponent} from "./element/element";
 
 interface ICanvasComponentProps {
-  
+  canvas: Canvas;
 }
 
-interface ICanvasComponentState {
-  elements: JSX.Element[];
-}
-
-export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentState> {
-  static get initialState(): ICanvasComponentState {
-    return {
-      elements: [] as JSX.Element[]
-    };
-  }
-
+export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentProps> {
   constructor(props : ICanvasComponentProps) {
     super(props);
   
-    this.state = {
-      elements: [] as JSX.Element[]
-    };
+    this.state = this.props;
   }
 
   refs: {
@@ -37,16 +29,19 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps, ICan
   private onDrop(e: DragEvent) {
     e.preventDefault();  
     let offset = this.getOffset();
-    let shape = e.dataTransfer.getData("shape");
-    let shapeElement = (
-      <svg key={new Date().getTime()}>
-        <use xlinkHref={`/shapes/${shape}.svg#${shape}`} x={e.clientX - offset.x - 50} y={e.clientY - offset.y - 50} width="100" height="100" />
-      </svg>
-    )
 
-    this.setState({
-      elements: this.state.elements.concat(shapeElement)
-    });
+    let canvasElement = new CanvasElement(
+      e.dataTransfer.getData("shape").toString(),
+      new Point(e.clientX - offset.x - 50, e.clientY - offset.y - 50),
+      100,
+      100
+    );
+
+    this.setState(Object.assign({}, this.state, {
+      canvas: {
+        elements: this.state.canvas.elements.concat(canvasElement)
+      }
+    }));
   }
 
   getOffset(): Point {
@@ -60,7 +55,7 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps, ICan
 
     return (
       <svg ref="canvas" className="c-app-canvas" onDragOver={onDragOver} onDrop={onDrop}>
-        {this.state.elements}
+        {this.state.canvas.elements.map((element, i) => <ElementComponent key={i} element={element} /> )}
       </svg>
     )
   }

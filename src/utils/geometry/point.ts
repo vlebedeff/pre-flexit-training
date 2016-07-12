@@ -13,6 +13,12 @@ export class Point implements IPoint, IClonable<Point> {
 
   }
 
+  subtract(other: Point): Point {
+    this.x -= other.x;
+    this.y -= other.y;
+    return this;
+  }
+
   clone() {
     return new Point(this.x, this.y);
   }
