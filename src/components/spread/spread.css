@@ -1,0 +1,40 @@
+.c-spread {
+  position: relative;
+  display: block;
+  box-shadow: 0 0 50px 0 rgba(0, 0, 0, .25);
+
+  & #background {
+    pointer-events: none;
+  }
+
+  & #overlay {
+    pointer-events: none;
+
+    &--spine {
+      &--darkening {
+        fill: rgba(0, 0, 0, .05);
+      }
+      &--shadow {
+        &--gradient {
+          &--start {
+            stop-color: rgba(0, 0, 0, .1);
+          }
+          &--stop {
+            stop-color: rgba(0, 0, 0, 0);
+          }
+        }
+      }
+    }
+  }
+
+  & #guidelines {
+    pointer-events: none;
+    stroke: #ccc;
+    stroke-dasharray: 5 2;
+    stroke-width: 1px;
+  }
+}
+
+.c-element {
+  transform-origin: 100% 100%;
+}
