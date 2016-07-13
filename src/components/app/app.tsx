@@ -1,24 +1,31 @@
 import * as React from "react";
 
-import {Canvas} from "../../models/canvas";
+import * as AppStore from "../../redux/app";
 
 import {ToolbarComponent} from "./toolbar/toolbar";
 import {CanvasComponent} from "./canvas/canvas";
 
 export class AppComponent extends React.Component<{}, {}> {
-  private _canvas: Canvas;
-  
-  constructor(props: Object) {
-    super(props);
-    this._canvas = new Canvas();
+  constructor() {
+    super();
+
+    AppStore.defaultStore.subscribe(() => {
+      this.setState({});
+    })
   }
 
   render() {
+    var state = AppStore.defaultStore.getState();
+
     return (
       <div className="c-app">
         <ToolbarComponent />
-        <CanvasComponent canvas={this._canvas} />
+        <CanvasComponent canvas={state.canvas} />
       </div>
     )
   }
+}
+
+export function createApplicationElement(): JSX.Element {
+  return <AppComponent />;
 }

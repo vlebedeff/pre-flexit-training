@@ -9,6 +9,9 @@ export class ToolbarComponent extends React.Component<{}, {}> {
         <ButtonComponent shape="square" />
         <ButtonComponent shape="circle" />
         <ButtonComponent shape="triangle" />
+        <ButtonComponent shape="homer-simpson" />
+        <ButtonComponent shape="sonic" />
+        <ButtonComponent shape="slack" />
       </div>
     )
   }

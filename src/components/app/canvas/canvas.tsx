@@ -1,22 +1,17 @@
 import * as React from "react";
 
 import {Point} from "../../../utils/geometry/point";
-import {Canvas} from "../../../models/canvas";
-import {CanvasElement} from "../../../models/canvas_element";
+import {Canvas, CanvasElement} from "../../../models/canvas";
 
 import {ElementComponent} from "./element/element";
+import {AppComponent} from "../app";
+import {defaultDispatcher} from "../../../redux/app";
 
 interface ICanvasComponentProps {
   canvas: Canvas;
 }
 
-export class CanvasComponent extends React.Component<ICanvasComponentProps, ICanvasComponentProps> {
-  constructor(props : ICanvasComponentProps) {
-    super(props);
-  
-    this.state = this.props;
-  }
-
+export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}> {
   refs: {
     [key: string]: (Element);
     canvas: Element;
@@ -29,19 +24,11 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps, ICan
   private onDrop(e: DragEvent) {
     e.preventDefault();  
     let offset = this.getOffset();
-
-    let canvasElement = new CanvasElement(
-      e.dataTransfer.getData("shape").toString(),
-      new Point(e.clientX - offset.x - 50, e.clientY - offset.y - 50),
-      100,
-      100
-    );
-
-    this.setState(Object.assign({}, this.state, {
-      canvas: {
-        elements: this.state.canvas.elements.concat(canvasElement)
-      }
-    }));
+    
+    defaultDispatcher.add({
+      shape: e.dataTransfer.getData("shape"),
+      position: new Point(e.clientX - offset.x - 50, e.clientY - offset.y - 50)
+    });
   }
 
   getOffset(): Point {
@@ -55,7 +42,7 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps, ICan
 
     return (
       <svg ref="canvas" className="c-app-canvas" onDragOver={onDragOver} onDrop={onDrop}>
-        {this.state.canvas.elements.map((element, i) => <ElementComponent key={i} element={element} /> )}
+        {this.props.canvas.elements.map((element) => <ElementComponent key={element.id} element={element} /> )}
       </svg>
     )
   }

@@ -1,11 +1,8 @@
+import {IClonable} from "../../interfaces/clonable"; 
+
 export interface IPoint {
   x: number;
   y: number;
-}
-
-//TODO: move it in separate file
-interface IClonable<T> {
-  clone(): T;
 }
 
 export class Point implements IPoint, IClonable<Point> {

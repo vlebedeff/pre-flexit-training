@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import {AppComponent} from "./components/app/app";
+import {createApplicationElement} from "./components/app/app";
 
 ReactDOM.render(
-  <AppComponent />,
+  createApplicationElement(),
   document.getElementById('app-placeholder')
 );
