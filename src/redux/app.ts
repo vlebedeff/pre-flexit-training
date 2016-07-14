@@ -48,6 +48,10 @@ export class AppState extends BaseModel {
 }
 
 export abstract class BaseDispatcher {
+  getState(): AppState {
+    return defaultStore.getState();
+  }
+
   protected call(command: string, payload: {} = null) {
      defaultStore.dispatch({type: command, payload: payload});
   }

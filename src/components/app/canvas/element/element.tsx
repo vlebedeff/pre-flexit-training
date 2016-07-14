@@ -10,6 +10,8 @@ interface IElementComponentProps {
 }
 
 export class ElementComponent extends React.Component<IElementComponentProps, {}> {
+  private _currentDragSession: DragSession;
+
   refs: {
     [key: string]: (Element);
     elementNode: HTMLElement;
@@ -25,20 +27,67 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
 
     elementNode.classList.add("dragging");
 
+    let selectedElements: HTMLElement[] = [];
+    let selectedElementsOutlines: HTMLElement[];
+    let shiftKey = e.shiftKey;
+
     new DragSession(
       e,
       (e: DragSessionEvent) => {
-        elementNode.style.transform = `translate(${e.translation.x}px, ${e.translation.y}px)`;
+        if (selectedElementsOutlines == null) {
+          this._currentDragSession = e.session;
+
+          if (canvasDispatcher.getState().canvas.selectedElementIds.indexOf(element.id) == -1) {
+            canvasDispatcher.select({
+              element: element,
+              exclusive: !shiftKey
+            });
+          }
+          selectedElementsOutlines = Array.prototype.slice.call(document.querySelectorAll("#selection rect")) as HTMLElement[];
+          selectedElements = canvasDispatcher.getState().canvas.selectedElementIds.map((elementId) => {
+            return document.querySelector(`#c-element__${elementId}`) as HTMLElement;
+          });
+        }
+
+        selectedElements.concat(selectedElementsOutlines).forEach((el) => {
+          if (el == null) {
+            return;
+          }
+          el.style.transform = `translate(${e.translation.x}px, ${e.translation.y}px)`;
+        });
       },
       (e: DragSessionEvent) => {
-        canvasDispatcher.move({
-          element: element,
-          newPosition: element.position.clone().add(e.translation)
-        });
-        elementNode.style.transform = '';
+        this._currentDragSession = null;
+
         elementNode.classList.remove("dragging");
+        
+        if (e.translation.x != 0 || e.translation.y != 0) {
+          canvasDispatcher.selectMove({
+            translation: e.translation
+          });
+        }
+        
+        selectedElements.concat(selectedElementsOutlines).forEach((el) => {
+          if (el == null) {
+            return;
+          }
+          el.style.transform = "";
+        });
       }
     );
+  }
+
+  onMouseUp(e: MouseEvent) {
+    if (this._currentDragSession != null) {
+      return;
+    }
+
+    const {element} = this.props;
+
+    canvasDispatcher.select({
+      element: element,
+      exclusive: !e.shiftKey
+    });
   }
 
   onDoubleClick(e: MouseEvent) {
@@ -54,11 +103,12 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
     const {element} = this.props;
 
     return (
-      <use ref="elementNode" className="c-element"
+      <use ref="elementNode" className="c-element" id={`c-element__${element.id}`}
            xlinkHref={`shapes/${element.shape}.svg#${element.shape}`}
            x={element.position.x} y={element.position.y}
            width={element.width} height={element.height}
            onMouseDown={this.onMouseDown.bind(this)}
+           onMouseUp={this.onMouseUp.bind(this)}
            onDoubleClick={this.onDoubleClick.bind(this)} />
     );
   }
