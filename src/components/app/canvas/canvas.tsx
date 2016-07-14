@@ -2,7 +2,7 @@ import * as React from "react";
 
 import {Point} from "../../../utils/geometry/point";
 import {Canvas, CanvasElement} from "../../../models/canvas";
-import elementDispatcher from "../../../redux/element";
+import canvasDispatcher from "../../../redux/canvas";
 
 import {ElementComponent} from "./element/element";
 
@@ -22,7 +22,7 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}>
 
   private onDrop(e: DragEvent) {
     e.preventDefault();  
-    elementDispatcher.add({
+    canvasDispatcher.add({
       shape: e.dataTransfer.getData("shape"),
       position: new Point(e.clientX, e.clientY).subtract(this.getOffset()).subtract(new Point(50, 50))
     });

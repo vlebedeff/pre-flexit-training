@@ -3,7 +3,7 @@ import * as React from "react";
 import {Point} from "../../../../utils/geometry/point";
 import {DragSession, DragSessionEvent} from "../../../../utils/mouse/drag_drop";
 import {CanvasElement} from "../../../../models/canvas";
-import elementDispatcher from "../../../../redux/element";
+import canvasDispatcher from "../../../../redux/canvas";
 
 interface IElementComponentProps {
   element: CanvasElement;
@@ -31,8 +31,8 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
         elementNode.style.transform = `translate(${e.translation.x}px, ${e.translation.y}px)`;
       },
       (e: DragSessionEvent) => {
-        elementDispatcher.move({
-          elementId: element.id,
+        canvasDispatcher.move({
+          element: element,
           newPosition: element.position.clone().add(e.translation)
         });
         elementNode.style.transform = '';
@@ -42,11 +42,11 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
   }
 
   onDoubleClick(e: MouseEvent) {
-    let args = {elementId: this.props.element.id};
+    let args = {element: this.props.element};
     if (e.altKey) {
-      elementDispatcher.sendBackward(args);
+      canvasDispatcher.sendBackward(args);
     } else {
-      elementDispatcher.sendForward(args);
+      canvasDispatcher.sendForward(args);
     }
   }
 

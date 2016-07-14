@@ -20,8 +20,8 @@ class HistoryDispatcher extends BaseDispatcher {
     return dispatcher;
   }
 
-  undo() { this._call(UNDO); }
-  redo() { this._call(REDO); }
+  undo() { this.call(UNDO); }
+  redo() { this.call(REDO); }
 }
 
-export HistoryDispatcher.default;
+export default HistoryDispatcher.default;
