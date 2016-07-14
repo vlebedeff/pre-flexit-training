@@ -10,10 +10,8 @@ export class ButtonComponent extends React.Component<ButtonComponentProps, {}> {
   }
 
   render() {
-    let onDragStart = this.onDragStart.bind(this);
-
     return (
-      <button className="c-app-toolbar-button" draggable="true" onDragStart={onDragStart}>
+      <button className="c-app-toolbar-button" draggable="true" onDragStart={this.onDragStart.bind(this)}>
         <svg>
           <use xlinkHref={`shapes/${this.props.shape}.svg#${this.props.shape}`} x="10" y="10" width="30" height="30" />
         </svg>

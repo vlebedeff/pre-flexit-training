@@ -2,10 +2,9 @@ import * as React from "react";
 
 import {Point} from "../../../utils/geometry/point";
 import {Canvas, CanvasElement} from "../../../models/canvas";
+import elementDispatcher from "../../../redux/element";
 
 import {ElementComponent} from "./element/element";
-import {AppComponent} from "../app";
-import {defaultDispatcher} from "../../../redux/app";
 
 interface ICanvasComponentProps {
   canvas: Canvas;
@@ -14,7 +13,7 @@ interface ICanvasComponentProps {
 export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}> {
   refs: {
     [key: string]: (Element);
-    canvas: Element;
+    canvasNode: Element;
   }
 
   private onDragOver(e: DragEvent) {
@@ -23,26 +22,29 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}>
 
   private onDrop(e: DragEvent) {
     e.preventDefault();  
-    let offset = this.getOffset();
-    
-    defaultDispatcher.add({
+    elementDispatcher.add({
       shape: e.dataTransfer.getData("shape"),
-      position: new Point(e.clientX - offset.x - 50, e.clientY - offset.y - 50)
+      position: new Point(e.clientX, e.clientY).subtract(this.getOffset()).subtract(new Point(50, 50))
     });
   }
 
   getOffset(): Point {
-    let rect = this.refs.canvas.getClientRects()[0];
+    let rect = this.refs.canvasNode.getClientRects()[0];
     return new Point(rect.left, rect.top);
   }
 
   render() {
-    let onDragOver = this.onDragOver.bind(this)
-    let onDrop = this.onDrop.bind(this)
-
     return (
-      <svg ref="canvas" className="c-app-canvas" onDragOver={onDragOver} onDrop={onDrop}>
-        {this.props.canvas.elements.map((element) => <ElementComponent key={element.id} element={element} /> )}
+      <svg ref="canvasNode" className="c-app-canvas" 
+           onDragOver={this.onDragOver.bind(this)}
+           onDrop={this.onDrop.bind(this)}>
+
+        <g id="content">
+          {this.props.canvas.elements.map((element) => <ElementComponent key={element.id} element={element} /> )}
+        </g>
+        <g id="selections">
+
+        </g>
       </svg>
     )
   }

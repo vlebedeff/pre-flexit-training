@@ -1,26 +1,26 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 
-import * as AppStore from "../../redux/app";
+import {defaultStore, AppState} from "../../redux/app";
 
 import {ToolbarComponent} from "./toolbar/toolbar";
 import {CanvasComponent} from "./canvas/canvas";
 
-export class AppComponent extends React.Component<{}, {}> {
+class AppComponent extends React.Component<{}, AppState> {
   constructor() {
     super();
+    this.state = defaultStore.getState();
 
-    AppStore.defaultStore.subscribe(() => {
-      this.setState({});
-    })
+    defaultStore.subscribe(() => {
+      this.setState(defaultStore.getState());
+    });
   }
 
   render() {
-    var state = AppStore.defaultStore.getState();
-
     return (
       <div className="c-app">
         <ToolbarComponent />
-        <CanvasComponent canvas={state.canvas} />
+        <CanvasComponent canvas={this.state.canvas} />
       </div>
     )
   }
@@ -28,4 +28,8 @@ export class AppComponent extends React.Component<{}, {}> {
 
 export function createApplicationElement(): JSX.Element {
   return <AppComponent />;
+}
+
+export function createApplication(target: Element) {
+  ReactDOM.render(createApplicationElement(), target);
 }

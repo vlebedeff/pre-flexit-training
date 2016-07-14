@@ -1,9 +1,9 @@
 import * as React from "react";
 
 import {Point} from "../../../../utils/geometry/point";
-import {DragSession, DragSessionEvent} from "../../../../utils/drag_drop/drag_drop";
+import {DragSession, DragSessionEvent} from "../../../../utils/mouse/drag_drop";
 import {CanvasElement} from "../../../../models/canvas";
-import {defaultDispatcher} from "../../../../redux/app";
+import elementDispatcher from "../../../../redux/element";
 
 interface IElementComponentProps {
   element: CanvasElement;
@@ -12,7 +12,7 @@ interface IElementComponentProps {
 export class ElementComponent extends React.Component<IElementComponentProps, {}> {
   refs: {
     [key: string]: (Element);
-    element: HTMLElement;
+    elementNode: HTMLElement;
   }
 
   onMouseDown(e: MouseEvent) {
@@ -20,20 +20,23 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
       return;
     }
 
+    const {element} = this.props;
+    const {elementNode} = this.refs;
+
+    elementNode.classList.add("dragging");
+
     new DragSession(
       e,
       (e: DragSessionEvent) => {
-        this.refs.element.style.transform = `translate(${e.translation.x}px, ${e.translation.y}px)`;
+        elementNode.style.transform = `translate(${e.translation.x}px, ${e.translation.y}px)`;
       },
       (e: DragSessionEvent) => {
-        defaultDispatcher.move({
-          elementId: this.props.element.id,
-          newPosition: new Point(
-            this.props.element.position.x + e.translation.x,
-            this.props.element.position.y + e.translation.y
-          )
-        })
-        this.refs.element.style.transform = '';
+        elementDispatcher.move({
+          elementId: element.id,
+          newPosition: element.position.clone().add(e.translation)
+        });
+        elementNode.style.transform = '';
+        elementNode.classList.remove("dragging");
       }
     );
   }
@@ -41,26 +44,22 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
   onDoubleClick(e: MouseEvent) {
     let args = {elementId: this.props.element.id};
     if (e.altKey) {
-      defaultDispatcher.sendBackward(args)
+      elementDispatcher.sendBackward(args);
     } else {
-      defaultDispatcher.sendForward({
-        elementId: this.props.element.id
-      })
+      elementDispatcher.sendForward(args);
     }
   }
 
   render() {
-    let element = this.props.element;
-    let onMouseDown = this.onMouseDown.bind(this);
-    let onDoubleClick = this.onDoubleClick.bind(this);
+    const {element} = this.props;
 
     return (
-      <use ref="element"
+      <use ref="elementNode" className="c-element"
            xlinkHref={`shapes/${element.shape}.svg#${element.shape}`}
            x={element.position.x} y={element.position.y}
            width={element.width} height={element.height}
-           onMouseDown={onMouseDown}
-           onDoubleClick={onDoubleClick} />
+           onMouseDown={this.onMouseDown.bind(this)}
+           onDoubleClick={this.onDoubleClick.bind(this)} />
     );
   }
 }

@@ -1,26 +1,25 @@
 import * as Redux from "redux";
 
 import {IClonable} from "../interfaces/clonable";
-import {Point} from "../utils/geometry/point";
-import {Canvas, CanvasElement} from "../models/canvas";
+import {Canvas} from "../models/canvas";
 
-
-interface Action<T> extends Redux.Action {
-  payload: T;
+interface Action extends Redux.Action {
+  payload: {};
 }
 
-export interface AddAction {
-  shape: string;
-  position: Point;
-}
+type ActionHandler = (state: AppState, action: {}) => AppState;
+type ActionHandlers = {[actionName: string]: ActionHandler};
 
+var actions = <ActionHandlers>{};
 
-export interface ElementAction {
-  elementId: number;
-}
+function appReducer(state: AppState = new AppState(), action: Action) {
+  var actionLogic = actions[action.type];
 
-export interface ElementMoveAction extends ElementAction {
-  newPosition: Point;
+  if (!actionLogic) {
+    return state;
+  }
+
+  return actionLogic(state, action.payload);
 }
 
 export class AppState implements IClonable<AppState> {
@@ -33,47 +32,14 @@ export class AppState implements IClonable<AppState> {
   }
 }
 
-export function appReducer(state: AppState = new AppState(), action: Redux.Action): AppState {
-  var newState = state.clone();
-
-  switch (action.type) {
-    case "add": {
-      let payload = (<Action<AddAction>>action).payload;
-      newState.canvas.addElement(payload.shape, payload.position);
-      break;
-    }
-    case "move": {
-      let payload = (<Action<ElementMoveAction>>action).payload;
-      newState.canvas.moveElement(payload.elementId, payload.newPosition);
-      break;
-    }
-    case "sendForward": {
-      let payload = (<Action<ElementAction>>action).payload;
-      newState.canvas.sendForward(payload.elementId);
-      break;
-    }
-    case "sendBackward": {
-      let payload = (<Action<ElementAction>>action).payload;
-      newState.canvas.sendBackward(payload.elementId);
-      break;
-    }
-    default:
-      return state;
-  }
-
-  return newState;
-}
-
-class AppDispatcher {
-  private _call(command: string, payload: {}) {
+export abstract class BaseDispatcher {
+  protected call(command: string, payload: {} = null) {
      defaultStore.dispatch({type: command, payload: payload});
   }
 
-  add(payload: AddAction) { this._call("add", payload); }
-  move(payload: ElementMoveAction) { this._call("move", payload); }
-  sendForward(payload: ElementAction) { this._call("sendForward", payload); }
-  sendBackward(payload: ElementAction) { this._call("sendBackward", payload); }
+  protected registerAction(command: string, handler: ActionHandler) {
+    actions[command] = handler;
+  }
 }
 
 export var defaultStore = Redux.createStore<AppState>(appReducer);
-export var defaultDispatcher = new AppDispatcher();
