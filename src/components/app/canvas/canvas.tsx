@@ -3,7 +3,8 @@ import * as React from "react";
 import {Point} from "../../../utils/geometry/point";
 import {Rect} from "../../../utils/geometry/rect";
 import {Canvas, CanvasElement} from "../../../models/canvas";
-import canvasDispatcher from "../../../redux/canvas";
+
+import {AppChildComponent} from "../../../app";
 
 import {ElementComponent} from "./element/element";
 
@@ -11,7 +12,7 @@ interface ICanvasComponentProps {
   canvas: Canvas;
 }
 
-export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}> {
+export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
   refs: {
     [key: string]: (Element);
     canvasNode: Element;
@@ -22,8 +23,9 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}>
   }
 
   private onDrop(e: DragEvent) {
-    e.preventDefault();  
-    canvasDispatcher.add({
+    e.preventDefault();
+
+    this.app.canvasDispatcher.add({
       shape: e.dataTransfer.getData("shape"),
       position: new Point(e.clientX, e.clientY).subtract(this.getOffset()).subtract(new Point(50, 50))
     });
@@ -31,7 +33,7 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps,  {}>
 
   private onClick(e: DragEvent) {
     if (e.target == this.refs.canvasNode) {
-      canvasDispatcher.selectFlush();
+      this.app.canvasDispatcher.selectFlush();
     }
   }
 

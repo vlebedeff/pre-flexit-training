@@ -1,4 +1,4 @@
-import {BaseModel} from "../utils/model/base_model";
+import {BaseModel, UpdatablePropeties} from "../lib/model";
 import {Point} from "../utils/geometry/point";
 import {Rect} from "../utils/geometry/rect";
 
@@ -59,7 +59,7 @@ export class CanvasElement extends BaseModel {
   }
 
   clone(): CanvasElement {
-    var newCanvasElement = new CanvasElement(this.shape, this.position.clone(), this.width, this.height);
+    let newCanvasElement = new CanvasElement(this.shape, this.position.clone(), this.width, this.height);
     newCanvasElement.id = this.id;
     return newCanvasElement;
   }

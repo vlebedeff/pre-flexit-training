@@ -1,9 +1,9 @@
-import * as Redux from "redux";
+import {Dispatcher} from "../lib/dispatcher";
 
-import {AppState, BaseDispatcher} from "./app";
-import {BaseModel} from "../utils/model/base_model";
-import {Canvas, CanvasElement} from "../models/canvas";
 import {Point} from "../utils/geometry/point";
+
+import {AppState} from "../models/app";
+import {Canvas, CanvasElement} from "../models/canvas";
 
 const ADD = "ELEMENT_ADD";
 const MOVE = "ELEMENT_MOVE";
@@ -34,11 +34,9 @@ interface ElementSelectAction extends ElementAction {
   exclusive: boolean;
 }
 
-class CanvasDispatcher extends BaseDispatcher {
-  static get default(): CanvasDispatcher {
-    var dispatcher = new CanvasDispatcher();
-
-    dispatcher.registerAction(ADD, (state: AppState, payload: AddAction) => {
+export class CanvasDispatcher extends Dispatcher<AppState> {
+  registerActions() {
+    this.registerAction(ADD, (state: AppState, payload: AddAction) => {
       //TODO: Optimize it and do update via one itaration
       let newElement = new CanvasElement(payload.shape, payload.position);
       return state
@@ -50,19 +48,19 @@ class CanvasDispatcher extends BaseDispatcher {
         });
     });
 
-    dispatcher.registerAction(MOVE, (state: AppState, payload: ElementMoveAction) => {
+    this.registerAction(MOVE, (state: AppState, payload: ElementMoveAction) => {
       return state.update<CanvasElement>(payload.element, (element) => {
         return element.clone().setPosition(payload.newPosition)
       });
     });
 
-    dispatcher.registerAction(SEND_FORWARD, (state: AppState, payload: ElementAction) => {
+    this.registerAction(SEND_FORWARD, (state: AppState, payload: ElementAction) => {
       return state.update<CanvasElement[]>(state.canvas.elements, (elements) => {
         //TODO: move logic to model
-        var index = state.canvas.elements.indexOf(payload.element);
-        var desiredIndex = index + 1;
+        let index = state.canvas.elements.indexOf(payload.element);
+        let desiredIndex = index + 1;
         if (index != -1 && desiredIndex < elements.length) {
-          var newElements = elements.slice(0); 
+          let newElements = elements.slice(0); 
           newElements.splice(index, 1);
           newElements.splice(desiredIndex, 0, payload.element);
           return newElements; 
@@ -71,13 +69,13 @@ class CanvasDispatcher extends BaseDispatcher {
       });
     });
 
-    dispatcher.registerAction(SEND_BACKWARD, (state: AppState, payload: ElementAction) => {
+    this.registerAction(SEND_BACKWARD, (state: AppState, payload: ElementAction) => {
       return state.update<CanvasElement[]>(state.canvas.elements, (elements) => {
         //TODO: move logic to model
-        var index = state.canvas.elements.indexOf(payload.element);
-        var desiredIndex = index - 1;
+        let index = state.canvas.elements.indexOf(payload.element);
+        let desiredIndex = index - 1;
         if (index != -1 && desiredIndex > -1) {
-          var newElements = elements.slice(0); 
+          let newElements = elements.slice(0); 
           newElements.splice(index, 1);
           newElements.splice(desiredIndex, 0, payload.element);
           return newElements;
@@ -86,11 +84,11 @@ class CanvasDispatcher extends BaseDispatcher {
       });
     });
 
-    dispatcher.registerAction(SELECT, (state: AppState, payload: ElementSelectAction) => {
+    this.registerAction(SELECT, (state: AppState, payload: ElementSelectAction) => {
       return state.update<number[]>(state.canvas.selectedElementIds, (selectedElementIds) => {
         //TODO: move logic to model
-        var index = selectedElementIds.indexOf(payload.element.id);
-        var alreadyExists = index != -1;
+        let index = selectedElementIds.indexOf(payload.element.id);
+        let alreadyExists = index != -1;
 
         if (payload.exclusive) {
           if (alreadyExists && selectedElementIds.length == 1) {
@@ -99,7 +97,7 @@ class CanvasDispatcher extends BaseDispatcher {
           return [payload.element.id];
         }
 
-        var newSelectedElements = selectedElementIds.slice(0);
+        let newSelectedElements = selectedElementIds.slice(0);
         if (alreadyExists) {
           newSelectedElements.splice(index, 1);
         } else {
@@ -110,16 +108,16 @@ class CanvasDispatcher extends BaseDispatcher {
       });
     });
 
-    dispatcher.registerAction(SELECT_FLUSH, (state: AppState, payload: AddAction) => {
+    this.registerAction(SELECT_FLUSH, (state: AppState, payload: AddAction) => {
       return state.update<number[]>(state.canvas.selectedElementIds, (selectedElementIds) => {
         return [];
       });
     });
 
-    dispatcher.registerAction(SELECT_MOVE, (state: AppState, payload: MoveAction) => {
+    this.registerAction(SELECT_MOVE, (state: AppState, payload: MoveAction) => {
       return state.update<CanvasElement[]>(state.canvas.elements, (elements) => {
         return elements.map((element) => {
-          var selected = state.canvas.selectedElementIds.indexOf(element.id) > -1;
+          let selected = state.canvas.selectedElementIds.indexOf(element.id) > -1;
           if (!selected) {
             return element;
           }
@@ -127,8 +125,6 @@ class CanvasDispatcher extends BaseDispatcher {
         })
       });
     });
-
-    return dispatcher;
   }
 
   add(payload: AddAction) { this.call(ADD, payload); }
@@ -139,5 +135,3 @@ class CanvasDispatcher extends BaseDispatcher {
   selectFlush() { this.call(SELECT_FLUSH); }
   selectMove(payload: MoveAction) { this.call(SELECT_MOVE, payload); }
 }
-
-export default CanvasDispatcher.default;

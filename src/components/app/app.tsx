@@ -1,21 +1,14 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import {defaultStore, AppState} from "../../redux/app";
+import {App} from "../../app";
+import {AppState} from "../../models/app";
+import {BaseAppComponent} from "../../app";
 
 import {ToolbarComponent} from "./toolbar/toolbar";
 import {CanvasComponent} from "./canvas/canvas";
 
-class AppComponent extends React.Component<{}, AppState> {
-  constructor() {
-    super();
-    this.state = defaultStore.getState();
-
-    defaultStore.subscribe(() => {
-      this.setState(defaultStore.getState());
-    });
-  }
-
+class AppComponent extends BaseAppComponent {
   render() {
     return (
       <div className="c-app">

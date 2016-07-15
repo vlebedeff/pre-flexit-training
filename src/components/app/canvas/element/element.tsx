@@ -3,13 +3,13 @@ import * as React from "react";
 import {Point} from "../../../../utils/geometry/point";
 import {DragSession, DragSessionEvent} from "../../../../utils/mouse/drag_drop";
 import {CanvasElement} from "../../../../models/canvas";
-import canvasDispatcher from "../../../../redux/canvas";
+import {AppChildComponent} from "../../../../app";
 
 interface IElementComponentProps {
   element: CanvasElement;
 }
 
-export class ElementComponent extends React.Component<IElementComponentProps, {}> {
+export class ElementComponent extends AppChildComponent<IElementComponentProps> {
   private _currentDragSession: DragSession;
 
   refs: {
@@ -37,14 +37,14 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
         if (selectedElementsOutlines == null) {
           this._currentDragSession = e.session;
 
-          if (canvasDispatcher.getState().canvas.selectedElementIds.indexOf(element.id) == -1) {
-            canvasDispatcher.select({
+          if (this.app.state.canvas.selectedElementIds.indexOf(element.id) == -1) {
+            this.app.canvasDispatcher.select({
               element: element,
               exclusive: !shiftKey
             });
           }
           selectedElementsOutlines = Array.prototype.slice.call(document.querySelectorAll("#selection rect")) as HTMLElement[];
-          selectedElements = canvasDispatcher.getState().canvas.selectedElementIds.map((elementId) => {
+          selectedElements = this.app.state.canvas.selectedElementIds.map((elementId) => {
             return document.querySelector(`#c-element__${elementId}`) as HTMLElement;
           });
         }
@@ -62,7 +62,7 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
         elementNode.classList.remove("dragging");
         
         if (e.translation.x != 0 || e.translation.y != 0) {
-          canvasDispatcher.selectMove({
+          this.app.canvasDispatcher.selectMove({
             translation: e.translation
           });
         }
@@ -84,7 +84,7 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
 
     const {element} = this.props;
 
-    canvasDispatcher.select({
+    this.app.canvasDispatcher.select({
       element: element,
       exclusive: !e.shiftKey
     });
@@ -93,9 +93,9 @@ export class ElementComponent extends React.Component<IElementComponentProps, {}
   onDoubleClick(e: MouseEvent) {
     let args = {element: this.props.element};
     if (e.altKey) {
-      canvasDispatcher.sendBackward(args);
+      this.app.canvasDispatcher.sendBackward(args);
     } else {
-      canvasDispatcher.sendForward(args);
+      this.app.canvasDispatcher.sendForward(args);
     }
   }
 

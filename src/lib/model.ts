@@ -1,18 +1,18 @@
-import {IClonable} from "../../interfaces/clonable";
+import {IClonable} from "../interfaces/clonable";
 
 export type UpdatablePropeties = BaseModel | any[];
 
 export abstract class BaseModel implements IClonable<BaseModel> {
   abstract clone(): BaseModel;
 
-  updateAll(predicate: (model: UpdatablePropeties) => UpdatablePropeties): UpdatablePropeties {
-    let changedModel = predicate(this);
+  updateAll(predicate: (property: UpdatablePropeties) => UpdatablePropeties): this {
+    let updatedModel = <this>predicate(this);
 
-    if (changedModel && changedModel !== this) {
-      return changedModel;
+    if (updatedModel !== this) {
+      return updatedModel;
     }
 
-    let cloned: BaseModel = null;
+    let cloned: this = null;
 
     for (let propertyName of Object.keys(this)) {
       let propertyValue = (<any>this)[propertyName];
@@ -47,7 +47,7 @@ export abstract class BaseModel implements IClonable<BaseModel> {
 
       if (newValue !== undefined) {
         if (cloned == null) {
-          cloned = this.clone();
+          cloned = <this>this.clone();
         }
         (<any>cloned)[propertyName] = newValue;
       }
@@ -56,14 +56,13 @@ export abstract class BaseModel implements IClonable<BaseModel> {
     return cloned || this;
   }
 
-  update<T extends UpdatablePropeties>(model: T, func: (model: T) => T): UpdatablePropeties {
+  update<T extends UpdatablePropeties>(model: T, func: (model: T) => T): this {
     return this.updateAll((inspectedModel) => {
       if (inspectedModel !== model) {
         return inspectedModel;
       }
 
       return func(model);
-      
     });
   }
 }
