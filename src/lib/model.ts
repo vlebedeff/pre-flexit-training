@@ -1,68 +1,85 @@
-import {IClonable} from "../interfaces/clonable";
+import {IClonable} from "./interfaces/clonable";
 
-export type UpdatablePropeties = BaseModel | any[];
+export abstract class Model implements IClonable {
+  abstract clone(): this;
+  
+  update(predicate: (model: this) => void): this {
+    let clonedModel = this.clone();
+    predicate(clonedModel);
+    return clonedModel;
+  }
+}
 
-export abstract class BaseModel implements IClonable<BaseModel> {
-  abstract clone(): BaseModel;
+export class List<T> extends Model {
+  private _array: T[];
 
-  updateAll(predicate: (property: UpdatablePropeties) => UpdatablePropeties): this {
-    let updatedModel = <this>predicate(this);
-
-    if (updatedModel !== this) {
-      return updatedModel;
+  constructor(init: boolean = false) {
+    super();
+    if (init) {
+      this._array = [];
     }
-
-    let cloned: this = null;
-
-    for (let propertyName of Object.keys(this)) {
-      let propertyValue = (<any>this)[propertyName];
-      let newValue: any = undefined;
-
-      if (propertyValue instanceof BaseModel) {
-        let result = (<BaseModel>propertyValue).updateAll(predicate);
-        if (result !== propertyValue) {
-          newValue = result;
-        }
-      }
-      else if (propertyValue instanceof Array) {
-        let changedArray = predicate(propertyValue);
-        if (changedArray !== propertyValue) {
-          newValue = changedArray;
-        } else {
-          let clonedArray: any[] = [];
-          for(let item of <[]>propertyValue) {
-            if (item instanceof BaseModel) {
-              let result = (<BaseModel>item).updateAll(predicate);
-              if (result !== item && newValue === undefined) {
-                newValue = clonedArray;
-              }
-              clonedArray.push(result);
-              
-            } else {
-              clonedArray.push(item);
-            }
-          }
-        }
-      }
-
-      if (newValue !== undefined) {
-        if (cloned == null) {
-          cloned = <this>this.clone();
-        }
-        (<any>cloned)[propertyName] = newValue;
-      }
-    }
-
-    return cloned || this;
   }
 
-  update<T extends UpdatablePropeties>(model: T, func: (model: T) => T): this {
-    return this.updateAll((inspectedModel) => {
-      if (inspectedModel !== model) {
-        return inspectedModel;
-      }
+  get count() {
+    return this._array.length;
+  }
 
-      return func(model);
-    });
+  get maxIndex() {
+    return this._array.length - 1;
+  }
+
+  find(predicate: (item: T) => boolean): T {
+    for (let item of this._array) {
+      if (predicate(item)) {
+        return item;
+      }
+    }
+  }
+ 
+  reset(...items: T[]) {
+    this._array = items;
+  }
+
+  push(item: T) {
+    this._array.push(item);
+  }
+
+  insert(index: number, item: T) {
+    this._array.splice(index, 0, item);
+  }
+
+  remove(item: T): number {
+    let index = this._array.indexOf(item);
+    this._array.splice(index, 1);
+    return index;
+  }
+
+  removeAll(predicate: (item: T) => boolean) {
+    this._array = this.reject(predicate);
+  }
+
+  replace(item: T, other: T) {
+    let index = this.remove(item);
+    this.insert(index, other);
+  }
+
+  map<U>(mappingFn: (item: T, index: number) => U): U[] {
+    return this._array.map(mappingFn);
+  }
+
+  reject(predicate: (item: T) => boolean): T[] {
+    return this._array.filter((item) => !predicate(item));
+  }
+
+  cloneExtended<U extends this>(type: {new(): U}): U {
+    let clonedList = <U>new type();
+    clonedList._array = [...this._array];
+    return clonedList;
+  }
+
+  clone(): this {
+    let clonedList = <this>new List<T>();
+    clonedList._array = [...this._array];
+    return clonedList;
   }
 }

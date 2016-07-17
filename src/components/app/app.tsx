@@ -1,10 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import {App} from "../../app";
-import {AppState} from "../../models/app";
 import {BaseAppComponent} from "../../app";
-
 import {ToolbarComponent} from "./toolbar/toolbar";
 import {CanvasComponent} from "./canvas/canvas";
 

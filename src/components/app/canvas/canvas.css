@@ -2,7 +2,11 @@
   display: flex;
   flex: 1;
 
-
+  &.dragging {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
 
   #selection {
     pointer-events: none;

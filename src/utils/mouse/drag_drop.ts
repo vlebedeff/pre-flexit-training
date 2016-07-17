@@ -13,7 +13,11 @@ export class DragSession {
   private _windowOnMouseMoveFn: (e: MouseEvent) => void;
   private _windowOnMouseUpFn: (e: MouseEvent) => void;
 
-  constructor(e: MouseEvent, private _onDragCallback: DragSessionCallback, private _onDropCallback: DragSessionCallback) {
+  constructor(e: MouseEvent,
+              private _onStartDragCallback: DragSessionCallback,
+              private _onDragCallback: DragSessionCallback,
+              private _onDropCallback: DragSessionCallback)
+  {
     this._startDragPoint = new Point(e.clientX, e.clientY)
 
     window.addEventListener("mousemove", this._windowOnMouseMoveFn = this._onMouseMove.bind(this));
@@ -25,6 +29,10 @@ export class DragSession {
   }
 
   private _onMouseMove(e: MouseEvent) {
+    if (this._onStartDragCallback) {
+      this._onStartDragCallback(new DragSessionEvent(this, this.getTranslation(e)));
+      this._onStartDragCallback = null;
+    }
     this._onDragCallback(new DragSessionEvent(this, this.getTranslation(e)));
   }
 

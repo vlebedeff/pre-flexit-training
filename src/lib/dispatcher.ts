@@ -1,4 +1,4 @@
-import {IStore} from "../interfaces/store";
+import {IStore} from "./interfaces/store";
 
 export abstract class Dispatcher<T> {
   constructor(private _store: IStore<T>) {
@@ -7,7 +7,7 @@ export abstract class Dispatcher<T> {
 
   abstract registerActions(): void;
 
-  protected call(actionName: string, payload: {} = null) {
+  protected sendCommand(actionName: string, payload: {} = null) {
     this._store.dispatch({type: actionName, payload: payload});
   }
 

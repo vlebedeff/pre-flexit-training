@@ -1,5 +1,5 @@
 import {Dispatcher} from "../lib/dispatcher";
-import {AppState} from "../models/app";
+import {AppState} from "../models/app_state";
 
 const UNDO = "HISTORY_UNDO";
 const REDO = "HISTORY_REDO";
@@ -17,6 +17,11 @@ export class HistoryDispatcher extends Dispatcher<AppState> {
     });
   }
 
-  undo() { this.call(UNDO); }
-  redo() { this.call(REDO); }
+  undo() {
+    this.sendCommand(UNDO);
+  }
+
+  redo() {
+    this.sendCommand(REDO);
+  }
 }
