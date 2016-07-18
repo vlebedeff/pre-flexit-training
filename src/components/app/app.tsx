@@ -10,7 +10,11 @@ class AppComponent extends BaseAppComponent {
     return (
       <div className="c-app">
         <ToolbarComponent />
-        <CanvasComponent canvas={this.state.canvas} />
+      <div className="c-app--work-area">
+          <div className="c-app--work-area--target">
+            <CanvasComponent canvas={this.state.canvas} width={1200} height={600} />
+          </div>
+        </div>
       </div>
     )
   }

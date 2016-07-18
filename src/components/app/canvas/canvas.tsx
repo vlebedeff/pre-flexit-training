@@ -12,6 +12,8 @@ import {AppChildComponent} from "../../../app";
 
 interface ICanvasComponentProps {
   canvas: Canvas;
+  width: number;
+  height: number;
 }
 
 export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
@@ -36,6 +38,11 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     return new Point(rect.left, rect.top);
   }
 
+  private getScale(): number {
+    let rect = this.refs.canvasNode.getClientRects()[0];
+    return rect.width * 1.0 / this.props.width;
+  }
+
   // Events
 
   private onDragOver(e: DragEvent) {
@@ -44,9 +51,12 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
 
   private onDrop(e: DragEvent) {
     e.preventDefault();
-    let position = new Point(e.clientX, e.clientY).subtract(this.getOffset())
+    let scale = this.getScale();
+    let offset = this.getOffset();
+    let addX = (e.clientX - offset.x) / scale;
+    let addY = (e.clientY - offset.y) / scale;
 
-    this.app.canvasDispatcher.add(e.dataTransfer.getData("shape"), position.x, position.y);
+    this.app.canvasDispatcher.add(e.dataTransfer.getData("shape"), addX, addY);
   }
 
   private onCanvasMouseDown(e: MouseEvent) {
@@ -57,8 +67,10 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     let selectionMouseNode: SVGRectElement;
 
     let offset = this.getOffset();
-    let startX = e.clientX - offset.x;
-    let startY = e.clientY - offset.y;
+    let scale = this.getScale();
+
+    let startX = (e.clientX - offset.x) / scale;
+    let startY = (e.clientY - offset.y) / scale;
 
     let {contentNode, selectionNode, selectionElementsNode, selectionOuterNode} = this.refs;
 
@@ -79,18 +91,20 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
         selected = [];
       },
       (e: DragSessionEvent) => {
+
+
         let x = startX;
         let y = startY;
-        let width = e.translation.x;
-        let height = e.translation.y;
+        let width = e.translation.x / scale;
+        let height = e.translation.y / scale;
 
         if (e.translation.x < 0) { 
-          x += e.translation.x;
+          x += e.translation.x / scale;
           width = -width;
         }
 
         if (e.translation.y < 0) { 
-          y += e.translation.y;
+          y += e.translation.y / scale;
           height = -height;
         }
 
@@ -138,6 +152,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
 
     const {canvasNode} = this.refs;
 
+    let scale = this.getScale();
     let translatedElements: HTMLElement[] = [];
     let shiftKey = e.shiftKey;
 
@@ -157,7 +172,10 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
         translatedElements = DomUtils.querySelectorAll<HTMLElement>(".translatable");
 
         translatedElements.forEach((el: HTMLElement) => {
-          el.style.transform = `translate(${e.translation.x}px, ${e.translation.y}px)`;
+          let translateX = e.translation.x / scale;
+          let translateY = e.translation.y / scale;
+
+          el.style.transform = `translate(${translateX}px, ${translateY}px)`;
         });
       },
       (e: DragSessionEvent) => {
@@ -166,7 +184,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
         canvasNode.classList.remove("dragging");
         
         if (e.translation.x != 0 || e.translation.y != 0) {
-          this.app.canvasDispatcher.translate(e.translation.x, e.translation.y);
+          this.app.canvasDispatcher.translate(e.translation.x / scale, e.translation.y / scale);
         }
         
         translatedElements.forEach((el: HTMLElement) => {
@@ -186,6 +204,35 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
   }
 
   // Render
+
+  private renderDefs(): JSX.Element {
+    return (
+      <defs>
+        <mask id="left-page">
+          <rect  x="0" y="0" width="50%" height="100%" fill="#fff" />
+        </mask>
+        <mask id="right-page">
+          <rect x="50%" y="0" width="50%" height="100%" fill="#fff" />
+        </mask>
+        <linearGradient id="overlay--shadow--gradient--left" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" className="c-app-canvas--overlay--shadow--gradient--stop" />
+          <stop offset="100%" className="c-app-canvas--overlay--shadow--gradient--start" />
+        </linearGradient>
+        <linearGradient id="overlay--shadow--gradient--right" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" className="c-app-canvas--overlay--shadow--gradient--start" />
+          <stop offset="100%" className="c-app-canvas--overlay--shadow--gradient--stop" />
+        </linearGradient>
+      </defs>
+    );
+  }
+  
+  private renderBackground(): JSX.Element {
+    return (
+      <g className="c-app-canvas--background">
+        <rect className="c-app-canvas--background--rect" x="0" y="0" width="100%" height="100%" />
+      </g>
+    );
+  }
 
   private renderContent(): JSX.Element {
     return (
@@ -254,16 +301,43 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     );
   }
 
+  private renderOverlay() {
+    let {width, height} = this.props;
+    let middle = width / 2;
+
+
+    return (
+      <g className="c-app-canvas--overlay">
+        <rect className="c-app-canvas--overlay--shadow--left" x="50%" y="0" width="100" height="100%" fill="url(#overlay--shadow--gradient--left)" />
+        <rect className="c-app-canvas--overlay--shadow--right" x="50%" y="0" width="100" height="100%" fill="url(#overlay--shadow--gradient--right)" />
+      </g>
+    );
+  }
+
+  private renderGuidelines(): JSX.Element {
+    return (
+      <g className="c-app-canvas--guidelines">
+        <line x1="50%" y1="0" x2="50%" y2="100%" />
+      </g>
+    );
+  }
+
   render() {
+    let {width, height} = this.props;
+
     return (
       <svg ref="canvasNode" className="c-app-canvas" 
            onDragOver={this.onDragOver.bind(this)}
            onDrop={this.onDrop.bind(this)}
            onMouseDown={this.onCanvasMouseDown.bind(this)}
            onMouseUp={this.onCanvasMouseUp.bind(this)}
-           >
+           viewBox={`0 0 ${width} ${height}`}>
+        {this.renderDefs()}
+        {this.renderBackground()}
         {this.renderContent()}
         {this.renderSelection()}
+        {this.renderOverlay()}
+        {this.renderGuidelines()}
       </svg>
     )
   }

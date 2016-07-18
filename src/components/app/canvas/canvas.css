@@ -1,6 +1,9 @@
 .c-app-canvas {
-  display: flex;
-  flex: 1;
+  position: relative;
+  display: block;
+  box-shadow: 0 0 50px 0 rgba(0, 0, 0, .25);
+  max-width: 1200px;
+  margin: 0 auto;
 
   &.dragging {
     cursor: grabbing;
@@ -8,9 +11,18 @@
     cursor: -webkit-grabbing;
   }
 
+  &--background {
+    pointer-events: none;
+
+    &--rect {
+      fill: #fff;
+      stroke: none;
+    }
+  }
+
   &--selection {
     pointer-events: none;
-    shape-rendering: crispEdges;
+    //shape-rendering: crispEdges;
 
     &--elements {
       fill: none;
@@ -29,5 +41,31 @@
       fill: rgba(79, 128, 255, .25);
       stroke: rgb(79, 128, 255);
     }
+  }
+
+  &--overlay {
+    pointer-events: none;
+
+    &--shadow {
+      &--gradient {
+        &--start {
+          stop-color: rgba(0, 0, 0, .1);
+        }
+        &--stop {
+          stop-color: rgba(0, 0, 0, 0);
+        }
+      }
+
+      &--left {
+        transform: translateX(-100px);
+      }
+    }
+  }
+
+  &--guidelines {
+    pointer-events: none;
+    stroke: #ccc;
+    stroke-dasharray: 5 2;
+    stroke-width: 1px;
   }
 }
