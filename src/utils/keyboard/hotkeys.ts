@@ -1,4 +1,4 @@
-import {CTRL, SHIFT, ALT} from "./keys";
+import {CTRL, SHIFT, ALT, COMMAND} from "./keys";
 
 type KeyboardHandler = (e: KeyboardEvent) => void;
 
@@ -15,6 +15,7 @@ export class HotkeysManager {
       if (e.ctrlKey) code |= CTRL;
       if (e.shiftKey) code |= SHIFT;
       if (e.altKey) code |= ALT;
+      if (e.metaKey) code |= COMMAND;
 
       let handler = this._hotKeys[code];
 

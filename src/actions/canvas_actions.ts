@@ -16,7 +16,7 @@ export interface ElementSelectAction {
   exclusive: boolean;
 }
 
-export function add(state: AppState, payload: AddAction) {
+export function elementAdd(state: AppState, payload: AddAction) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -28,7 +28,7 @@ export function add(state: AppState, payload: AddAction) {
   });
 }
 
-export function select(state: AppState, payload: ElementSelectAction) {
+export function elementsSelect(state: AppState, payload: ElementSelectAction) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -38,7 +38,7 @@ export function select(state: AppState, payload: ElementSelectAction) {
   });
 }
 
-export function clearSelection(state: AppState, payload: AddAction) {
+export function selectionClear(state: AppState, payload: AddAction) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -48,7 +48,7 @@ export function clearSelection(state: AppState, payload: AddAction) {
   });
 }
 
-export function deleteSelection(state: AppState, payload: AddAction) {
+export function selectionDelete(state: AppState, payload: AddAction) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -58,7 +58,7 @@ export function deleteSelection(state: AppState, payload: AddAction) {
   });
 }
 
-export function move(state: AppState, payload: PositioningAction) {
+export function selectionTranslate(state: AppState, payload: PositioningAction) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -72,7 +72,7 @@ export function move(state: AppState, payload: PositioningAction) {
   });
 }
 
-export function sendForward(state: AppState) {
+export function selectionSendForward(state: AppState) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -84,7 +84,7 @@ export function sendForward(state: AppState) {
   });
 }
 
-export function sendBackward(state: AppState) {
+export function selectionSendBackward(state: AppState) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -96,7 +96,7 @@ export function sendBackward(state: AppState) {
   });
 }
 
-export function bringToTop(state: AppState) {
+export function selectionBringToTop(state: AppState) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
@@ -108,12 +108,12 @@ export function bringToTop(state: AppState) {
   });
 }
 
-export function bringToBottom(state: AppState) {
+export function selectionBringToBack(state: AppState) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
         for (let canvasElement of newCanvasElements.getSelected()) {
-          newCanvasElements.brintToBottom(canvasElement);
+          newCanvasElements.bringToBack(canvasElement);
         }
       });
     });

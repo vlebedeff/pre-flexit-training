@@ -4,63 +4,62 @@ import {CanvasElement} from "../models/canvas/canvas_element";
 
 import * as CanvasActions from "../actions/canvas_actions";
 
-const ADD = "ELEMENT_ADD";
-const MOVE = "ELEMENT_MOVE";
-const SEND_FORWARD = "ELEMENT_SEND_FORWARD";
-const SEND_BACKWARD = "ELEMENT_SEND_BACKWARD";
-const BRING_FORWARD = "ELEMENT_BRING_FORWARD";
-const BRING_BACKWARD = "ELEMENT_BRING_BACKWARD";
-const SELECT = "ELEMENT_SELECT";
-const SELECT_FLUSH = "SELECT_FLUSH";
-const SELECT_MOVE = "SELECT_MOVE";
-const DELETE = "DELETE";
+const ELEMENT_ADD = "canvas.element.add";
+const SELECTION_TRANSLATE = "canvas.selection.move";
+const SELECTION_SEND_FORWARD = "canvas.selection.sendForward";
+const SELECTION_SEND_BACKWARD = "canvas.selection.sendBackward";
+const SELECTION_BRING_TO_FRONT = "canvas.selection.bringToFront";
+const SELECTION_BRING_TO_BACK = "canvas.selection.bringToBack";
+const ELEMENTS_SELECT = "canvas.elements.select";
+const SELECTION_CLEAR = "canvas.selection.clear";
+const SELECTION_DELETE = "canvas.selection.delete";
 
 export class CanvasDispatcher extends Dispatcher<AppState> {
   registerActions() {
-    this.registerAction(ADD, CanvasActions.add);
-    this.registerAction(SELECT, CanvasActions.select);
-    this.registerAction(MOVE, CanvasActions.move);
-    this.registerAction(SEND_FORWARD, CanvasActions.sendForward);
-    this.registerAction(SEND_BACKWARD, CanvasActions.sendBackward);
-    this.registerAction(BRING_FORWARD, CanvasActions.bringToTop);
-    this.registerAction(BRING_BACKWARD, CanvasActions.bringToBottom);
-    this.registerAction(SELECT_FLUSH, CanvasActions.clearSelection);
-    this.registerAction(DELETE, CanvasActions.deleteSelection);
+    this.registerAction(ELEMENT_ADD, CanvasActions.elementAdd);
+    this.registerAction(ELEMENTS_SELECT, CanvasActions.elementsSelect);
+    this.registerAction(SELECTION_TRANSLATE, CanvasActions.selectionTranslate);
+    this.registerAction(SELECTION_SEND_FORWARD, CanvasActions.selectionSendForward);
+    this.registerAction(SELECTION_SEND_BACKWARD, CanvasActions.selectionSendBackward);
+    this.registerAction(SELECTION_BRING_TO_FRONT, CanvasActions.selectionBringToTop);
+    this.registerAction(SELECTION_BRING_TO_BACK, CanvasActions.selectionBringToBack);
+    this.registerAction(SELECTION_CLEAR, CanvasActions.selectionClear);
+    this.registerAction(SELECTION_DELETE, CanvasActions.selectionDelete);
   }
 
   add(shape: string, x: number, y: number) {
-    this.sendCommand(ADD, <CanvasActions.AddAction>{shape, x, y});
+    this.sendCommand(ELEMENT_ADD, <CanvasActions.AddAction>{shape, x, y});
   }
 
   select(exclusive: boolean, ...elements: number[]) {
-    this.sendCommand(SELECT, <CanvasActions.ElementSelectAction>{elements, exclusive});
+    this.sendCommand(ELEMENTS_SELECT, <CanvasActions.ElementSelectAction>{elements, exclusive});
   }
 
   clearSelection() {
-    this.sendCommand(SELECT_FLUSH);
+    this.sendCommand(SELECTION_CLEAR);
   }
 
   deleteSelection() {
-    this.sendCommand(DELETE);
+    this.sendCommand(SELECTION_DELETE);
   }
 
   translate(x: number, y: number) {
-    this.sendCommand(MOVE, <CanvasActions.PositioningAction>{x, y});
+    this.sendCommand(SELECTION_TRANSLATE, <CanvasActions.PositioningAction>{x, y});
   }
 
   sendForward() {
-    this.sendCommand(SEND_FORWARD);
+    this.sendCommand(SELECTION_SEND_FORWARD);
   }
 
   sendBackward() {
-    this.sendCommand(SEND_BACKWARD);
+    this.sendCommand(SELECTION_SEND_BACKWARD);
   }
 
   bringToTop() {
-    this.sendCommand(BRING_FORWARD);
+    this.sendCommand(SELECTION_BRING_TO_FRONT);
   }
 
   bringToBottom() {
-    this.sendCommand(BRING_BACKWARD);
+    this.sendCommand(SELECTION_BRING_TO_BACK);
   }
 }

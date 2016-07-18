@@ -53,7 +53,7 @@ export class CanvasElementCollection extends List<CanvasElement> {
     this.push(canvasElement);
   }
 
-  brintToBottom(canvasElement: CanvasElement) {
+  bringToBack(canvasElement: CanvasElement) {
     this.remove(canvasElement);
     this.insert(0, canvasElement);
   }

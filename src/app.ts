@@ -5,25 +5,32 @@ import {ReduxStore} from "./lib/stores/redux";
 
 import {AppState} from "./models/app_state";
 
+import {HistoryProvider} from "./lib/history/history_provider"
+
 import {CanvasDispatcher} from "./dispatchers/canvas_dispatcher";
 import {HistoryDispatcher} from "./dispatchers/history_dispatcher";
 
 import {HotkeysManager} from "./utils/keyboard/hotkeys"
 
 import * as Keys from "./utils/keyboard/keys"
-import {CTRL, SHIFT, ALT} from "./utils/keyboard/keys"
+import {CTRL, SHIFT, ALT, COMMAND} from "./utils/keyboard/keys"
 
 export class App {
   store: IStore<AppState>;
+  historyProvider: HistoryProvider<AppState>;
+
   canvasDispatcher: CanvasDispatcher;
   historyDispatcher: HistoryDispatcher;
+
   hotkeys: HotkeysManager;
+  
 
   constructor() {
     this.store = new ReduxStore<AppState>(new AppState(true));
+    this.historyProvider = new HistoryProvider<AppState>(this.store);
 
     this.canvasDispatcher = new CanvasDispatcher(this.store);
-    this.historyDispatcher = new HistoryDispatcher(this.store);
+    this.historyDispatcher = new HistoryDispatcher(this.store, this.historyProvider);
     this.hotkeys = new HotkeysManager();
 
     this.hotkeys
@@ -40,7 +47,9 @@ export class App {
       .register(ALT|Keys.Up, () => this.canvasDispatcher.sendForward())
       .register(ALT|Keys.Down, () => this.canvasDispatcher.sendBackward())
       .register(CTRL|ALT|Keys.Up, () => this.canvasDispatcher.bringToTop())
-      .register(CTRL|ALT|Keys.Down, () => this.canvasDispatcher.bringToBottom());
+      .register(CTRL|ALT|Keys.Down, () => this.canvasDispatcher.bringToBottom())
+      .register(COMMAND|Keys.code('z'), () => this.historyDispatcher.undo())
+      .register(COMMAND|SHIFT|Keys.code('z'), () => this.historyDispatcher.redo());
 
     this.canvasDispatcher.registerActions();
     this.historyDispatcher.registerActions();

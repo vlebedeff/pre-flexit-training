@@ -1,10 +1,11 @@
 export function code(s: string): number {
-  return s.charCodeAt(0);
+  return s.toUpperCase().charCodeAt(0);
 }
 
 export const ALT = 1 << 8;
 export const CTRL = 1 << 9;
 export const SHIFT = 1 << 10;
+export const COMMAND = 1 << 11;
 
 export const Esc = 27;
 export const Backspace = 8;
