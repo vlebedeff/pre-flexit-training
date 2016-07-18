@@ -2,10 +2,6 @@ import {AppState} from "../models/app_state";
 import {Canvas} from "../models/canvas";
 import {CanvasElement} from "../models/canvas/canvas_element";
 
-export interface ElementAction {
-  element: CanvasElement;
-}
-
 export interface PositioningAction {
   x: number;
   y: number;
@@ -15,7 +11,8 @@ export interface AddAction extends PositioningAction {
   shape: string;
 }
 
-export interface ElementSelectAction extends ElementAction {
+export interface ElementSelectAction {
+  elements: number[];
   exclusive: boolean;
 }
 
@@ -25,7 +22,7 @@ export function add(state: AppState, payload: AddAction) {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
         let newElement = newCanvas.createElement(payload.shape, payload.x, payload.y);
         newCanvasElements.push(newElement);
-        newCanvasElements.select(newElement);
+        newCanvasElements.select(true, newElement.id);
       })
     });
   });
@@ -35,7 +32,7 @@ export function select(state: AppState, payload: ElementSelectAction) {
   return state.update(newState => {
     newState.canvas = newState.canvas.update(newCanvas => {
       newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        newCanvasElements.select(payload.element, payload.exclusive);
+        newCanvasElements.select(payload.exclusive, ...payload.elements);
       })
     });
   });

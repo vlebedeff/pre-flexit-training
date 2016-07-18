@@ -8,22 +8,26 @@
     cursor: -webkit-grabbing;
   }
 
-  #selection {
+  &--selection {
     pointer-events: none;
+    shape-rendering: crispEdges;
 
-    &-elements {
+    &--elements {
       fill: none;
       stroke: rgb(79, 128, 255);
       stroke-width: 1;
-      shape-rendering: crispEdges;
     }
 
-    &-outter-rect {
+    &--outer {
       fill: none;
       stroke: rgba(0, 0, 0, .25);
       stroke-width: 1;
       stroke-dasharray: 3, 4;
-      shape-rendering: crispEdges;
+    }
+    
+    &--mouse {
+      fill: rgba(79, 128, 255, .25);
+      stroke: rgb(79, 128, 255);
     }
   }
 }

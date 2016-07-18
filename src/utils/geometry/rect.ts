@@ -6,8 +6,16 @@ export interface IRect {
 }
 
 export class Rect implements IRect {
+  static fromArray([x, y, width, height]: number[]): Rect {
+    return new Rect(x, y, width, height);
+  }
+
   constructor(public x: number, public y: number, public width: number, public height: number) {
 
+  }
+
+  toArray(): number[] {
+    return [this.x, this.y, this.width, this.height];
   }
 }
 

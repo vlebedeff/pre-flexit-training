@@ -23,17 +23,18 @@ export class CanvasElementCollection extends List<CanvasElement> {
     return this._selected.map(elementId => this.getById(elementId));
   }
 
-  select(canvasElement: CanvasElement, exclusive: boolean = true) {
-    let elementId = canvasElement.id;
-    let index = this._selected.indexOf(elementId);
-    let selected = index != -1;
+  select(exclusive: boolean, ...elementIds: number[]) {
     if (exclusive) {
-      this._selected = [elementId];
+      this._selected = elementIds.slice(0);
     } else {
-      if (selected) {
-        this._selected.splice(index, 1);
-      } else {
-        this._selected.push(elementId);
+      for (let elementId of elementIds) {
+        let index = this._selected.indexOf(elementId);
+        let selected = index != -1;
+        if (selected) {
+          this._selected.splice(index, 1);
+        } else {
+          this._selected.push(elementId);
+        }
       }
     }
   }

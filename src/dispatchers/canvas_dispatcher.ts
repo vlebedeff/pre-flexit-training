@@ -29,11 +29,11 @@ export class CanvasDispatcher extends Dispatcher<AppState> {
   }
 
   add(shape: string, x: number, y: number) {
-    this.sendCommand(ADD, <CanvasActions.AddAction>{shape: shape, x: x, y: y});
+    this.sendCommand(ADD, <CanvasActions.AddAction>{shape, x, y});
   }
 
-  select(canvasElement: CanvasElement, exclusive: boolean) {
-    this.sendCommand(SELECT, <CanvasActions.ElementSelectAction>{element: canvasElement, exclusive: exclusive});
+  select(exclusive: boolean, ...elements: number[]) {
+    this.sendCommand(SELECT, <CanvasActions.ElementSelectAction>{elements, exclusive});
   }
 
   clearSelection() {
