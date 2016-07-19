@@ -16,106 +16,101 @@ export interface ElementSelectAction {
   exclusive: boolean;
 }
 
-export function elementAdd(state: AppState, payload: AddAction) {
+function updateCurrentSpread(state: AppState, updateFn: (spread: Canvas) => void): AppState {
   return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        let newElement = newCanvas.createElement(payload.shape, payload.x, payload.y);
-        newCanvasElements.push(newElement);
-        newCanvasElements.select(true, newElement.id);
-      })
+    return newState.spreads = newState.spreads.update(newSpreads => {
+      let currentSpread = newSpreads.current;
+      let updatedSpread = currentSpread.update(newSpread => {
+        updateFn(newSpread);
+      });
+      newSpreads.replace(currentSpread, updatedSpread);
+    });
+  });
+  
+}
+
+export function elementAdd(state: AppState, payload: AddAction) {
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      let newElement = newCanvas.createElement(payload.shape, payload.x, payload.y);
+      newCanvasElements.push(newElement);
+      newCanvasElements.select(true, newElement.id);
     });
   });
 }
 
 export function elementsSelect(state: AppState, payload: ElementSelectAction) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        newCanvasElements.select(payload.exclusive, ...payload.elements);
-      })
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      newCanvasElements.select(payload.exclusive, ...payload.elements);
     });
   });
 }
 
 export function selectionClear(state: AppState, payload: AddAction) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        newCanvasElements.clearSelection();
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      newCanvasElements.clearSelection();
     });
   });
 }
 
 export function selectionDelete(state: AppState, payload: AddAction) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        newCanvasElements.deleteSelection();
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      newCanvasElements.deleteSelection();
     });
   });
 }
 
 export function selectionTranslate(state: AppState, payload: PositioningAction) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        for (let canvasElement of newCanvasElements.getSelected()) {
-          let newCanvasElement = canvasElement.clone();
-          newCanvasElement.translate(payload.x, payload.y);
-          newCanvasElements.replace(canvasElement, newCanvasElement);
-        }
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      for (let canvasElement of newCanvasElements.getSelected()) {
+        let newCanvasElement = canvasElement.clone();
+        newCanvasElement.translate(payload.x, payload.y);
+        newCanvasElements.replace(canvasElement, newCanvasElement);
+      }
     });
   });
 }
 
 export function selectionSendForward(state: AppState) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        for (let canvasElement of newCanvasElements.getSelected()) {
-          newCanvasElements.sendForward(canvasElement);
-        }
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      for (let canvasElement of newCanvasElements.getSelected()) {
+        newCanvasElements.sendForward(canvasElement);
+      }
     });
   });
 }
 
 export function selectionSendBackward(state: AppState) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        for (let canvasElement of newCanvasElements.getSelected()) {
-          newCanvasElements.sendBackward(canvasElement);
-        }
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      for (let canvasElement of newCanvasElements.getSelected()) {
+        newCanvasElements.sendBackward(canvasElement);
+      }
     });
   });
 }
 
 export function selectionBringToTop(state: AppState) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        for (let canvasElement of newCanvasElements.getSelected()) {
-          newCanvasElements.bringToTop(canvasElement);
-        }
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      for (let canvasElement of newCanvasElements.getSelected()) {
+        newCanvasElements.bringToTop(canvasElement);
+      }
     });
   });
 }
 
 export function selectionBringToBack(state: AppState) {
-  return state.update(newState => {
-    newState.canvas = newState.canvas.update(newCanvas => {
-      newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-        for (let canvasElement of newCanvasElements.getSelected()) {
-          newCanvasElements.bringToBack(canvasElement);
-        }
-      });
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      for (let canvasElement of newCanvasElements.getSelected()) {
+        newCanvasElements.bringToBack(canvasElement);
+      }
     });
   });
 }

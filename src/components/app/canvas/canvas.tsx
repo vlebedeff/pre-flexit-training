@@ -60,6 +60,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
   }
 
   private onCanvasMouseDown(e: MouseEvent) {
+    if (e.button != 0) return;    
     if (e.target != this.refs.canvasNode) return;
 
     let selected: SVGRectElement[];
@@ -146,9 +147,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
   }
 
   private onElementMouseDown(e: MouseEvent, canvasElement: CanvasElement) {
-    if (e.button != 0) {
-      return;
-    }
+    if (e.button != 0) return;
 
     const {canvasNode} = this.refs;
 
@@ -163,7 +162,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
 
         canvasNode.classList.add("dragging");
 
-        if (!this.app.state.canvas.elements.isSelected(canvasElement.id)) {
+        if (!this.app.state.spreads.current.elements.isSelected(canvasElement.id)) {
           this.app.canvasDispatcher.select(!shiftKey, canvasElement.id);
         }
 
@@ -335,9 +334,9 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
         {this.renderDefs()}
         {this.renderBackground()}
         {this.renderContent()}
-        {this.renderSelection()}
         {this.renderOverlay()}
         {this.renderGuidelines()}
+        {this.renderSelection()}
       </svg>
     )
   }

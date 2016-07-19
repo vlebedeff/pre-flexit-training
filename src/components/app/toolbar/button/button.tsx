@@ -1,10 +1,12 @@
 import * as React from "react";
 
+import {AppChildComponent} from "../../../../app"; 
+
 interface ButtonComponentProps {
   shape: string;
 }
 
-export class ButtonComponent extends React.Component<ButtonComponentProps, {}> {
+export class ButtonComponent extends AppChildComponent<ButtonComponentProps> {
   onDragStart(e: DragEvent) {
     e.dataTransfer.setData("shape", this.props.shape);
   }

@@ -8,6 +8,13 @@ const newElementHeight = 100;
 export class Canvas extends Model {
   elements: CanvasElementCollection;
 
+  constructor(init: boolean = true) {
+    super();
+    if (init) {
+      this.elements = new CanvasElementCollection(true);
+    }
+  }
+
   createElement(shape: string, x: number, y: number): CanvasElement {
     let newElement = new CanvasElement();
 
