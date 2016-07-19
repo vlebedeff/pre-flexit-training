@@ -16,7 +16,7 @@ class AppComponent extends BaseAppComponent {
         <div className="c-app--layout--main-column">
           <div className="c-app--work-area">
             <div className="c-app--work-area--target">
-              <CanvasComponent canvas={spreads.current} width={1200} height={600} />
+              <CanvasComponent canvas={spreads.current} width={1200} height={600} contentEditable={true} />
             </div>
           </div>
           <NavComponent spreads={spreads} />

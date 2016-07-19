@@ -26,7 +26,6 @@ function updateCurrentSpread(state: AppState, updateFn: (spread: Canvas) => void
       newSpreads.replace(currentSpread, updatedSpread);
     });
   });
-  
 }
 
 export function elementAdd(state: AppState, payload: AddAction) {

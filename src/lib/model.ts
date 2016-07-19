@@ -39,6 +39,10 @@ export class List<T> extends Model {
   get(index: number): T {
     return this._array[index];
   }
+
+  indexOf(item: T): number {
+    return this._array.indexOf(item);
+  }
  
   reset(...items: T[]) {
     this._array = items;

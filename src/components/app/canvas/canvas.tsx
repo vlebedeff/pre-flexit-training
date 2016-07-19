@@ -10,13 +10,24 @@ import {DragSession, DragSessionEvent} from "../../../utils/mouse/drag_drop";
 
 import {AppChildComponent} from "../../../app"; 
 
-interface ICanvasComponentProps {
+interface ICanvasComponentOptionalProps {
+  contentEditable?: boolean;
+}
+
+interface ICanvasComponentProps extends ICanvasComponentOptionalProps {
   canvas: Canvas;
   width: number;
   height: number;
+  
 }
 
 export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
+  static get defaultProps(): ICanvasComponentOptionalProps {
+    return {
+      contentEditable: false
+    }
+  }
+
   private _currentDragSession: DragSession;
 
   refs: {
@@ -56,7 +67,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     let addX = (e.clientX - offset.x) / scale;
     let addY = (e.clientY - offset.y) / scale;
 
-    this.app.canvasDispatcher.add(e.dataTransfer.getData("shape"), addX, addY);
+    this.app.spreadDispatcher.add(e.dataTransfer.getData("shape"), addX, addY);
   }
 
   private onCanvasMouseDown(e: MouseEvent) {
@@ -131,7 +142,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
       (e: DragSessionEvent) => {
         this._currentDragSession = null;
         selectionNode.removeChild(selectionMouseNode);
-        this.app.canvasDispatcher.select(true, ...selected.map(rect => parseInt(rect.getAttribute("data-id"))));
+        this.app.spreadDispatcher.select(true, ...selected.map(rect => parseInt(rect.getAttribute("data-id"))));
       }
     )
   }
@@ -142,7 +153,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     }
 
     if (e.target == this.refs.canvasNode) {
-      this.app.canvasDispatcher.clearSelection();
+      this.app.spreadDispatcher.clearSelection();
     }
   }
 
@@ -163,12 +174,12 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
         canvasNode.classList.add("dragging");
 
         if (!this.app.state.spreads.current.elements.isSelected(canvasElement.id)) {
-          this.app.canvasDispatcher.select(!shiftKey, canvasElement.id);
+          this.app.spreadDispatcher.select(!shiftKey, canvasElement.id);
         }
 
       },
       (e: DragSessionEvent) => {
-        translatedElements = DomUtils.querySelectorAll<HTMLElement>(".translatable");
+        translatedElements = DomUtils.querySelectorAll<HTMLElement>(".translatable", canvasNode);
 
         translatedElements.forEach((el: HTMLElement) => {
           let translateX = e.translation.x / scale;
@@ -183,7 +194,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
         canvasNode.classList.remove("dragging");
         
         if (e.translation.x != 0 || e.translation.y != 0) {
-          this.app.canvasDispatcher.translate(e.translation.x / scale, e.translation.y / scale);
+          this.app.spreadDispatcher.translate(e.translation.x / scale, e.translation.y / scale);
         }
         
         translatedElements.forEach((el: HTMLElement) => {
@@ -199,7 +210,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
       return;
     }
 
-    this.app.canvasDispatcher.select(!e.shiftKey, canvasElement.id);
+    this.app.spreadDispatcher.select(!e.shiftKey, canvasElement.id);
   }
 
   // Render
@@ -233,6 +244,23 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     );
   }
 
+  private renderEditableContent(): JSX.Element {
+    return (
+      <g ref="contentNode" className="c-app-canvas--content">
+        {
+          this.props.canvas.elements.map(canvasElement =>
+            <use key={canvasElement.id}
+                 className={`c-app-canvas--content--element ${this.selectedElements.indexOf(canvasElement) > -1 ? "translatable" : ""}`}
+                 xlinkHref={`shapes/${canvasElement.shape}.svg#${canvasElement.shape}`}
+                 x={canvasElement.x} y={canvasElement.y} width={canvasElement.width} height={canvasElement.height}
+                 onMouseDown={(e: MouseEvent) => this.onElementMouseDown(e, canvasElement)}
+                 onMouseUp={(e: MouseEvent) => this.onElementMouseUp(e, canvasElement)} />
+          )
+        }
+      </g>
+    );
+  }
+
   private renderContent(): JSX.Element {
     return (
       <g ref="contentNode" className="c-app-canvas--content">
@@ -241,10 +269,8 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
             <use key={canvasElement.id}
                  className={`c-app-canvas--content--element ${this.selectedElements.indexOf(canvasElement) > -1 ? "translatable" : ""}`}
                  xlinkHref={`shapes/${canvasElement.shape}.svg#${canvasElement.shape}`}
-                 x={canvasElement.x} y={canvasElement.y}
-                 width={canvasElement.width} height={canvasElement.height}
-                 onMouseDown={(e: MouseEvent) => this.onElementMouseDown(e, canvasElement)}
-                 onMouseUp={(e: MouseEvent) => this.onElementMouseUp(e, canvasElement)} />)
+                 x={canvasElement.x} y={canvasElement.y} width={canvasElement.width} height={canvasElement.height} />
+          )
         }
       </g>
     );
@@ -321,23 +347,47 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     );
   }
 
-  render() {
+  private renderEditableCanvas(): JSX.Element {
     let {width, height} = this.props;
 
     return (
       <svg ref="canvasNode" className="c-app-canvas" 
-           onDragOver={this.onDragOver.bind(this)}
-           onDrop={this.onDrop.bind(this)}
-           onMouseDown={this.onCanvasMouseDown.bind(this)}
-           onMouseUp={this.onCanvasMouseUp.bind(this)}
-           viewBox={`0 0 ${width} ${height}`}>
+          onDragOver={this.onDragOver.bind(this)}
+          onDrop={this.onDrop.bind(this)}
+          onMouseDown={this.onCanvasMouseDown.bind(this)}
+          onMouseUp={this.onCanvasMouseUp.bind(this)}
+          viewBox={`0 0 ${width} ${height}`}>
+        {this.renderDefs()}
+        {this.renderBackground()}
+        {this.renderEditableContent()}
+        {this.renderOverlay()}
+        {this.renderGuidelines()}
+        {this.renderSelection()}
+      </svg>
+    );
+  }
+
+  private renderCanvas(): JSX.Element {
+    let {width, height} = this.props;
+
+    return (
+      <svg ref="canvasNode" className="c-app-canvas" viewBox={`0 0 ${width} ${height}`}>
         {this.renderDefs()}
         {this.renderBackground()}
         {this.renderContent()}
         {this.renderOverlay()}
         {this.renderGuidelines()}
-        {this.renderSelection()}
       </svg>
-    )
+    );
+  }
+
+  render() {
+    let {contentEditable} = this.props;
+
+    if (contentEditable) {
+      return this.renderEditableCanvas();
+    } else {
+      return this.renderCanvas();
+    }
   }
 }

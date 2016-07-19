@@ -18,6 +18,14 @@ export class CanvasCollection extends List<Canvas> {
     return this.get(this._current);
   }
 
+  get currentIndex(): number {
+    return this._current;
+  }
+
+  select(spreadIndex: number) {
+    this._current = spreadIndex;
+  }
+
   clone(): this {
     let clone = <this>super.cloneExtended(CanvasCollection);
     clone._current = this._current; 
