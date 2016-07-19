@@ -6,4 +6,27 @@
   bottom: 0;
   display: flex;
   flex-direction: row;
+
+  &--layout--main-column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    background: #b5b5b5;
+  }
+
+  &--work-area {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    
+    &--target {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+  }
 }

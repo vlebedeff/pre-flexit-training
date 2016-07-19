@@ -1,25 +1,71 @@
 .c-app-canvas {
-  display: flex;
-  flex: 1;
+  position: relative;
+  display: block;
+  box-shadow: 0 0 50px 0 rgba(0, 0, 0, .25);
+  max-width: 1200px;
+  margin: 0 auto;
 
+  &.dragging {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+  }
 
-
-  #selection {
+  &--background {
     pointer-events: none;
 
-    &-elements {
+    &--rect {
+      fill: #fff;
+      stroke: none;
+    }
+  }
+
+  &--selection {
+    pointer-events: none;
+    //shape-rendering: crispEdges;
+
+    &--elements {
       fill: none;
       stroke: rgb(79, 128, 255);
       stroke-width: 1;
-      shape-rendering: crispEdges;
     }
 
-    &-outter-rect {
+    &--outer {
       fill: none;
       stroke: rgba(0, 0, 0, .25);
       stroke-width: 1;
       stroke-dasharray: 3, 4;
-      shape-rendering: crispEdges;
     }
+    
+    &--mouse {
+      fill: rgba(79, 128, 255, .25);
+      stroke: rgb(79, 128, 255);
+    }
+  }
+
+  &--overlay {
+    pointer-events: none;
+
+    &--shadow {
+      &--gradient {
+        &--start {
+          stop-color: rgba(0, 0, 0, .1);
+        }
+        &--stop {
+          stop-color: rgba(0, 0, 0, 0);
+        }
+      }
+
+      &--left {
+        transform: translateX(-100px);
+      }
+    }
+  }
+
+  &--guidelines {
+    pointer-events: none;
+    stroke: rgba(0, 0, 0, .25);;
+    stroke-dasharray: 5 2;
+    stroke-width: 1px;
   }
 }

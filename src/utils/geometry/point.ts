@@ -1,11 +1,9 @@
-import {IClonable} from "../../interfaces/clonable"; 
-
 export interface IPoint {
   x: number;
   y: number;
 }
 
-export class Point implements IPoint, IClonable<Point> {
+export class Point implements IPoint {
   constructor(public x: number, public y: number) {
 
   }
@@ -22,7 +20,7 @@ export class Point implements IPoint, IClonable<Point> {
     return this;
   }
 
-  clone() {
-    return new Point(this.x, this.y);
+  clone(): this {
+    return <this>new Point(this.x, this.y);
   }
 }

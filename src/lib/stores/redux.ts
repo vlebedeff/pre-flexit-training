@@ -1,5 +1,5 @@
 import * as Redux from "redux";
-import {IStore, IStoreAction} from "../../interfaces/store";
+import {IStore, IStoreAction} from "./../interfaces/store";
 
 export class ReduxStore<TState> implements IStore<TState>{
   private _store: Redux.Store<TState>;

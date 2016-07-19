@@ -1,8 +1,9 @@
 import * as React from "react";
 
+import {AppChildComponent} from "../../../app"; 
 import {ButtonComponent} from "./button/button";
 
-export class ToolbarComponent extends React.Component<{}, {}> {
+export class ToolbarComponent extends AppChildComponent<{}> {
   render() {
     return (
       <div className="c-app-toolbar">
