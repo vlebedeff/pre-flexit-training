@@ -12,14 +12,13 @@ interface INavComponentProps {
 export class NavComponent extends AppChildComponent<INavComponentProps> {
   render() {
     let {spreads} = this.props;
-    console.log(spreads);
     
     return (
       <div className="c-app-nav">
         {
-          spreads.map(canvas => {
+          spreads.map((canvas, i) => {
             return (
-              <CanvasComponent canvas={canvas} width={1200} height={600} />
+              <CanvasComponent key={`canvas_${i}`} canvas={canvas} width={1200} height={600} />
             );
           })
         }
