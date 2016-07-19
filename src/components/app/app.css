@@ -14,6 +14,20 @@
     background: #b5b5b5;
   }
 
+  &--header {
+    padding: 20px;
+    text-align: center;
+
+    button {
+      border: 2px solid #e2a10d;
+      background: #f7d21f;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 14px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.4);
+    }
+  }
+
   &--work-area {
     flex: 1;
     position: relative;

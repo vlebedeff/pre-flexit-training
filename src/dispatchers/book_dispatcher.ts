@@ -1,6 +1,5 @@
 import {AppState} from "../models/app_state";
 import {Dispatcher} from "../lib/dispatcher";
-import {CanvasElement} from "../models/canvas/canvas_element";
 
 import * as BookActions from "../actions/book_actions";
 

@@ -1,10 +1,11 @@
 import {AppState} from "../models/app_state";
 import {Dispatcher} from "../lib/dispatcher";
-import {CanvasElement} from "../models/canvas/canvas_element";
 
 import * as SpreadActions from "../actions/spread_actions";
 
-const ELEMENT_ADD = "spread.element.add";
+const ELEMENT_ADD_STICKER = "spread.element.add.sticker";
+const ELEMENT_ADD_TEXT = "spread.element.add.text";
+const ELEMENT_EDIT_TEXT = "spread.element.edit.text";
 const ELEMENTS_SELECT = "spread.elements.select";
 const ELEMENTS_SELECT_ALL = "spread.elements.select.all";
 const SELECTION_TRANSLATE = "spread.selection.move";
@@ -14,10 +15,13 @@ const SELECTION_BRING_TO_FRONT = "spread.selection.bringToFront";
 const SELECTION_BRING_TO_BACK = "spread.selection.bringToBack";
 const SELECTION_CLEAR = "spread.selection.clear";
 const SELECTION_DELETE = "spread.selection.delete";
+const SELECTION_TEXT_ALIGN = "spread.selection.text.align";
 
 export class SpreadDispatcher extends Dispatcher<AppState> {
   registerActions() {
-    this.registerAction(ELEMENT_ADD, SpreadActions.elementAdd);
+    this.registerAction(ELEMENT_ADD_STICKER, SpreadActions.elementAddSticker);
+    this.registerAction(ELEMENT_ADD_TEXT, SpreadActions.elementAddText);
+    this.registerAction(ELEMENT_EDIT_TEXT, SpreadActions.elementEditText);
     this.registerAction(ELEMENTS_SELECT, SpreadActions.elementsSelect);
     this.registerAction(ELEMENTS_SELECT_ALL, SpreadActions.elementsSelectAll);
     this.registerAction(SELECTION_TRANSLATE, SpreadActions.selectionTranslate);
@@ -27,10 +31,19 @@ export class SpreadDispatcher extends Dispatcher<AppState> {
     this.registerAction(SELECTION_BRING_TO_BACK, SpreadActions.selectionBringToBack);
     this.registerAction(SELECTION_CLEAR, SpreadActions.selectionClear);
     this.registerAction(SELECTION_DELETE, SpreadActions.selectionDelete);
+    this.registerAction(SELECTION_TEXT_ALIGN, SpreadActions.selectionTextAlign);
   }
 
   add(shape: string, x: number, y: number) {
-    this.sendCommand(ELEMENT_ADD, <SpreadActions.AddAction>{shape, x, y});
+    this.sendCommand(ELEMENT_ADD_STICKER, <SpreadActions.AddStickerAction>{shape, x, y});
+  }
+
+  addTextElement(x: number, y: number, autosize: boolean) {
+    this.sendCommand(ELEMENT_ADD_TEXT, <SpreadActions.AddTextAction>{x, y, autosize});
+  }
+
+  editTextElement(elementId: number, text: string, x: number, y: number, width: number, height: number) {
+    this.sendCommand(ELEMENT_EDIT_TEXT, <SpreadActions.EditTextAction>{elementId, text, x, y, width, height});
   }
 
   select(exclusive: boolean, ...elements: number[]) {
@@ -67,5 +80,9 @@ export class SpreadDispatcher extends Dispatcher<AppState> {
 
   bringToBottom() {
     this.sendCommand(SELECTION_BRING_TO_BACK);
+  }
+
+  textAlign(align: number) {
+    this.sendCommand(SELECTION_TEXT_ALIGN, <SpreadActions.AlignTextAction>{align});
   }
 }

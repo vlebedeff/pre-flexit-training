@@ -47,7 +47,7 @@ export class CanvasCollection extends List<Canvas> implements ISerializable<ISer
 
   deserialize(serializedValue: ISerializedSpreadCollection) {
     this.reset(...serializedValue.items.map(item => {
-      var spread = new Canvas();
+      let spread = new Canvas();
       spread.deserialize(item);
       return spread;
     }));

@@ -1,19 +1,36 @@
 import {AppState} from "../models/app_state";
 import {Canvas} from "../models/canvas";
-import {CanvasElement} from "../models/canvas/canvas_element";
+import {SpreadTextElement, TextAlign} from "../models/canvas/spread_element_text";
 
 export interface PositioningAction {
   x: number;
   y: number;
 }
 
-export interface AddAction extends PositioningAction {
+export interface AddStickerAction extends PositioningAction {
   shape: string;
+}
+
+export interface AddTextAction extends PositioningAction {
+  autosize: boolean;
 }
 
 export interface ElementSelectAction {
   elements: number[];
   exclusive: boolean;
+}
+
+export interface EditTextAction {
+  elementId: number;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface AlignTextAction {
+  align: TextAlign;
 }
 
 function updateCurrentSpread(state: AppState, updateFn: (spread: Canvas) => void): AppState {
@@ -28,12 +45,34 @@ function updateCurrentSpread(state: AppState, updateFn: (spread: Canvas) => void
   });
 }
 
-export function elementAdd(state: AppState, payload: AddAction) {
+export function elementAddSticker(state: AppState, payload: AddStickerAction) {
   return updateCurrentSpread(state, newCanvas => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-      let newElement = newCanvas.createElement(payload.shape, payload.x, payload.y);
+      let newElement = newCanvas.createStickerElement(payload.shape, payload.x, payload.y);
       newCanvasElements.push(newElement);
       newCanvasElements.select(true, newElement.id);
+    });
+  });
+}
+
+export function elementAddText(state: AppState, payload: AddTextAction) {
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      let newElement = newCanvas.createTextElement(payload.x, payload.y, payload.autosize);
+      newCanvasElements.push(newElement);
+      newCanvasElements.select(true, newElement.id);
+    });
+  });
+}
+
+export function elementEditText(state: AppState, payload: EditTextAction) {
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      let textElement = <SpreadTextElement>newCanvasElements.getById(payload.elementId);
+      let newTextElement = textElement.clone();
+      newTextElement.text = payload.text;
+      newTextElement.setBBox(payload.x, payload.y, payload.width, payload.height);
+      newCanvasElements.replace(textElement, newTextElement);
     });
   });
 }
@@ -54,7 +93,7 @@ export function elementsSelectAll(state: AppState, payload: ElementSelectAction)
   });
 }
 
-export function selectionClear(state: AppState, payload: AddAction) {
+export function selectionClear(state: AppState) {
   return updateCurrentSpread(state, newCanvas => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
       newCanvasElements.clearSelection();
@@ -62,7 +101,7 @@ export function selectionClear(state: AppState, payload: AddAction) {
   });
 }
 
-export function selectionDelete(state: AppState, payload: AddAction) {
+export function selectionDelete(state: AppState) {
   return updateCurrentSpread(state, newCanvas => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
       newCanvasElements.deleteSelection();
@@ -117,6 +156,20 @@ export function selectionBringToBack(state: AppState) {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
       for (let canvasElement of newCanvasElements.getSelected()) {
         newCanvasElements.bringToBack(canvasElement);
+      }
+    });
+  });
+}
+
+export function selectionTextAlign(state: AppState, payload: AlignTextAction) {
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      for (let canvasElement of newCanvasElements.getSelected()) {
+        if (canvasElement instanceof SpreadTextElement) {
+          let newElement = (<SpreadTextElement>canvasElement).clone();
+          newElement.align = payload.align;
+          newCanvasElements.replace(canvasElement, newElement);
+        }
       }
     });
   });

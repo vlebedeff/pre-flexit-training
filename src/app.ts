@@ -4,6 +4,7 @@ import {Component, PropTypes} from "react";
 import {ReduxStore} from "./lib/stores/redux";
 
 import {AppState, ISerialzedAppState} from "./models/app_state";
+import {TextAlign} from "./models/canvas/spread_element_text";
 
 import {HistoryProvider} from "./lib/history/history_provider"
 
@@ -62,7 +63,10 @@ export class App {
       .register(CTRL|ALT|Keys.Up, () => this.spreadDispatcher.bringToTop())
       .register(CTRL|ALT|Keys.Down, () => this.spreadDispatcher.bringToBottom())
       .register(COMMAND|Keys.code('z'), () => this.historyDispatcher.undo())
-      .register(COMMAND|SHIFT|Keys.code('z'), () => this.historyDispatcher.redo());
+      .register(COMMAND|SHIFT|Keys.code('z'), () => this.historyDispatcher.redo())
+      .register(COMMAND|Keys.Up, () => this.spreadDispatcher.textAlign(TextAlign.Center))
+      .register(COMMAND|Keys.Left, () => this.spreadDispatcher.textAlign(TextAlign.Left))
+      .register(COMMAND|Keys.Right, () => this.spreadDispatcher.textAlign(TextAlign.Right));
 
     this.spreadDispatcher.registerActions();
     this.historyDispatcher.registerActions();

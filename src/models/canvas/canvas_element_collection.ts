@@ -1,13 +1,15 @@
 import {ISerializable} from "../../lib/interfaces/serializable";
 import {List} from  "../../lib/model";
-import {CanvasElement, ISerializedSpreadElement} from "./canvas_element";
+import {SpreadStickerElement, ISerializedSpreadStickerElement, SpreadStickerElementType} from "./spread_element_sticker";
+import {SpreadTextElement, ISerializedSpreadTextElement, SpreadTextElementType} from "./spread_element_text";
+import {BaseSpreadType, ISerializedSpreadElement} from "./spread_element";
 
 export interface ISerializedSpreadElementCollection {
   items: ISerializedSpreadElement[];
   selectedItems: number[];
 }
 
-export class CanvasElementCollection extends List<CanvasElement> implements ISerializable<ISerializedSpreadElementCollection> {
+export class CanvasElementCollection extends List<BaseSpreadType> implements ISerializable<ISerializedSpreadElementCollection> {
   private _selected: number[];
 
   constructor(init: boolean = false) {
@@ -21,11 +23,11 @@ export class CanvasElementCollection extends List<CanvasElement> implements ISer
     return this._selected.indexOf(elementId) != -1;
   }
 
-  getById(id: number): CanvasElement {
+  getById(id: number): BaseSpreadType {
     return this.find(canvasElement => canvasElement.id == id);
   }
 
-  getSelected(): CanvasElement[] {
+  getSelected(): BaseSpreadType[] {
     return this._selected.map(elementId => this.getById(elementId));
   }
 
@@ -58,22 +60,22 @@ export class CanvasElementCollection extends List<CanvasElement> implements ISer
     this._selected = [];
   }
 
-  bringToTop(canvasElement: CanvasElement) {
+  bringToTop(canvasElement: BaseSpreadType) {
     this.remove(canvasElement);
     this.push(canvasElement);
   }
 
-  bringToBack(canvasElement: CanvasElement) {
+  bringToBack(canvasElement: BaseSpreadType) {
     this.remove(canvasElement);
     this.insert(0, canvasElement);
   }
 
-  sendForward(canvasElement: CanvasElement) {
+  sendForward(canvasElement: BaseSpreadType) {
     let index = this.remove(canvasElement);
     this.insert(Math.min(index + 1, this.count), canvasElement);
   }
 
-  sendBackward(canvasElement: CanvasElement) {
+  sendBackward(canvasElement: BaseSpreadType) {
     let index = this.remove(canvasElement);
     this.insert(Math.max(index - 1, 0), canvasElement);
   }
@@ -93,7 +95,17 @@ export class CanvasElementCollection extends List<CanvasElement> implements ISer
 
   deserialize(serializedValue: ISerializedSpreadElementCollection) {
     this.reset(...serializedValue.items.map(item => {
-      var spreadElement = new CanvasElement();
+      let spreadElement: BaseSpreadType;
+      switch (item.type) {
+        case SpreadStickerElementType:
+          spreadElement = new SpreadStickerElement();
+          break;
+        case SpreadTextElementType:
+          spreadElement = new SpreadTextElement();
+          break;
+        default:
+          throw new Error("Invalid type value of element");
+      }
       spreadElement.deserialize(item);
       return spreadElement;
     }));

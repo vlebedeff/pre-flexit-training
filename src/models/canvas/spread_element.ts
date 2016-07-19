@@ -1,9 +1,11 @@
 import {ISerializable} from "../../lib/interfaces/serializable";
 import {Model} from  "../../lib/model";
 
+export type BaseSpreadType = SpreadElement<ISerializedSpreadElement>;
+
 export interface ISerializedSpreadElement {
+  type: string;
   id: number;
-  shape: string;
   x: number;
   y: number;
   width: number;
@@ -11,9 +13,7 @@ export interface ISerializedSpreadElement {
   angle: number;
 }
 
-
-export class CanvasElement extends Model implements ISerializable<ISerializedSpreadElement> {
-  shape: string;
+export abstract class SpreadElement<T extends ISerializedSpreadElement> extends Model implements ISerializable<T> {
   x: number;
   y: number;
   width: number;
@@ -24,15 +24,23 @@ export class CanvasElement extends Model implements ISerializable<ISerializedSpr
     super();
   }
 
+  abstract getType(): string;
+
   translate(x: number, y: number) {
     this.x += x;
     this.y += y;
   }
 
-  clone(): this {
-    let clone =  <this>new CanvasElement(this.id);
+  setBBox(x: number, y: number, width: number, height: number) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+
+  cloneSuper<U extends this>(type: {new(): U}): U {
+    let clone =  <U>new type();
     clone.id = this.id;
-    clone.shape = this.shape;
     clone.x = this.x;
     clone.y = this.y;
     clone.width = this.width;
@@ -42,9 +50,9 @@ export class CanvasElement extends Model implements ISerializable<ISerializedSpr
   }
 
   serialize() {
-    return {
+    return <T>{
+      type: this.getType(),
       id: this.id,
-      shape: this.shape,
       x: this.x,
       y: this.y,
       width: this.width,
@@ -53,9 +61,8 @@ export class CanvasElement extends Model implements ISerializable<ISerializedSpr
     };
   }
 
-  deserialize(serializedValue: ISerializedSpreadElement) {
+  deserialize(serializedValue: T) {
     this.id = serializedValue.id;
-    this.shape = serializedValue.shape;
     this.x = serializedValue.x;
     this.y = serializedValue.y;
     this.width = serializedValue.width;

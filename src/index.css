@@ -1,5 +1,8 @@
 @import "components/app/app.css";
 @import "components/app/toolbar/toolbar.css";
 @import "components/app/toolbar/button/button.css";
-@import "components/app/canvas/canvas.css";
+@import "components/app/spread/spread.css";
+@import "components/app/spread/element/element.css";
+@import "components/app/spread/element/text/text.css";
+@import "components/app/spread/element/sticker/sticker.css";
 @import "components/app/nav/nav.css";

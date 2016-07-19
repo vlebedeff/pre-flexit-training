@@ -4,7 +4,7 @@ import {Canvas} from "../../../models/canvas";
 import {CanvasCollection} from "../../../models/canvas/canvas_collection";
 
 import {AppChildComponent} from "../../../app"; 
-import {CanvasComponent} from "../canvas/canvas";
+import {SpreadComponent} from "../spread/spread";
 
 interface INavComponentProps {
   spreads: CanvasCollection
@@ -33,7 +33,7 @@ export class NavComponent extends AppChildComponent<INavComponentProps> {
 
             return (
               <div key={`canvas_${i}`} className={classNames.join(" ")} onClick={(e) => this.onSpreadClick(canvas)}>
-                <CanvasComponent canvas={canvas} width={1200} height={600} />
+                <SpreadComponent canvas={canvas} width={1200} height={600} />
               </div>
             );
           })

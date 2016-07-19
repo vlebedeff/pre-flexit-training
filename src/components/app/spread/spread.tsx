@@ -1,37 +1,55 @@
 import * as React from "react";
 import * as DomUtils from "../../../utils/dom";
+import * as ObjectUtils from "../../../utils/object";
 
 import {Point} from "../../../utils/geometry/point";
 import {Rect, outerRect} from "../../../utils/geometry/rect";
 import {Canvas} from "../../../models/canvas";
-import {CanvasElement} from "../../../models/canvas/canvas_element";
+import {BaseSpreadType} from "../../../models/canvas/spread_element";
+import {SpreadStickerElement, SpreadStickerElementType} from "../../../models/canvas/spread_element_sticker";
+import {SpreadTextElement, SpreadTextElementType} from "../../../models/canvas/spread_element_text";
 
 import {DragSession, DragSessionEvent} from "../../../utils/mouse/drag_drop";
 
 import {AppChildComponent} from "../../../app"; 
 
-interface ICanvasComponentOptionalProps {
+import {BaseSpreadElementComponent} from "./element/element"
+import {SpreadTextElementComponent, ContentEvent, TextChangeEvent} from "./element/text/text"
+import {SpreadStickerElementComponent} from "./element/sticker/sticker"
+
+type SvgAttributes = React.SVGAttributes & React.Attributes;
+
+interface ISpreadComponentOptionalProps {
   contentEditable?: boolean;
 }
 
-interface ICanvasComponentProps extends ICanvasComponentOptionalProps {
+interface ISpreadComponentProps extends ISpreadComponentOptionalProps {
   canvas: Canvas;
   width: number;
   height: number;
   
 }
 
-export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
-  static get defaultProps(): ICanvasComponentOptionalProps {
+const getElementKey = (element: BaseSpreadType, modifier: string = null) => {
+  let key = `element:${element.id}`;
+  if(modifier) {
+    key += `:${modifier}`;
+  }
+  return key;
+} 
+
+export class SpreadComponent extends AppChildComponent<ISpreadComponentProps> {
+  static get defaultProps(): ISpreadComponentOptionalProps {
     return {
       contentEditable: false
     }
   }
 
   private _currentDragSession: DragSession;
+  private _editingText: boolean = false;
 
   refs: {
-    [key: string]: (Element);
+    [key: string]: any;
     canvasNode: SVGElement;
     contentNode: SVGGElement;
     selectionNode: SVGGElement;
@@ -39,19 +57,32 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     selectionOuterNode: SVGRectElement;
   }
 
-  private get selectedElements() {
-    //TODO: cache
-    return this.props.canvas.elements.getSelected();
-  }
-
   private getOffset(): Point {
-    let rect = this.refs.canvasNode.getClientRects()[0];
+    let rect = this.refs.canvasNode.getBoundingClientRect();
     return new Point(rect.left, rect.top);
   }
 
   private getScale(): number {
-    let rect = this.refs.canvasNode.getClientRects()[0];
+    let rect = this.refs.canvasNode.getBoundingClientRect();
     return rect.width * 1.0 / this.props.width;
+  }
+
+  private clientRectToSVGRect(clientRect: ClientRect): SVGRect {
+    let scale = this.getScale();
+    let offset = this.getOffset();
+    let {left, top, width, height} = clientRect;
+    
+    let x = (left - offset.x) / scale;
+    let y = (top - offset.y) / scale;
+    width /= scale;
+    height /= scale;
+
+    return {x, y, width, height};
+  }
+
+  private get selectedElements() {
+    //TODO: cache
+    return this.props.canvas.elements.getSelected();
   }
 
   // Events
@@ -66,8 +97,38 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     let offset = this.getOffset();
     let addX = (e.clientX - offset.x) / scale;
     let addY = (e.clientY - offset.y) / scale;
+    let shape = e.dataTransfer.getData("shape");
 
-    this.app.spreadDispatcher.add(e.dataTransfer.getData("shape"), addX, addY);
+    switch (shape) {
+      case "text":
+      case "paragraph":
+        this.app.spreadDispatcher.addTextElement(addX, addY, shape != "paragraph");
+
+        setTimeout(() => {
+          let {canvas} = this.props;
+          let elementKey = getElementKey(canvas.elements.get(canvas.elements.maxIndex));
+          let lastElement = this.refs[elementKey] as SpreadTextElementComponent; 
+
+          lastElement.focus();
+        }, 100);
+        break;
+
+      default:
+        this.app.spreadDispatcher.add(shape, addX, addY);
+        break;
+    }
+  }
+
+  private onMouseSelectionStart(e: DragSessionEvent) {
+    //
+  }
+
+  private onMouseSelectionChange(e: DragSessionEvent) {
+    //
+  }
+
+  private onMouseSelectionStop(e: DragSessionEvent) {
+    //
   }
 
   private onCanvasMouseDown(e: MouseEvent) {
@@ -157,60 +218,105 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     }
   }
 
-  private onElementMouseDown(e: MouseEvent, canvasElement: CanvasElement) {
-    if (e.button != 0) return;
+  private onElementDragStart(e: DragSessionEvent, element: BaseSpreadType) {
+    this._currentDragSession = e.session;
 
     const {canvasNode} = this.refs;
+    canvasNode.classList.add("dragging");
+    if (!this.app.state.spreads.current.elements.isSelected(element.id)) {
+      this.app.spreadDispatcher.select(!e.originalEvent.shiftKey, element.id);
+    }
+  }
+
+  private onElementDragOver(e: DragSessionEvent) {
+    let scale = this.getScale();
+    let translateX = e.translation.x / scale;
+    let translateY = e.translation.y / scale;
+    let translationStyle = `translate(${translateX}px, ${translateY}px)`;
+
+    for (let selectedElement of this.selectedElements) {
+      let selectedElementComponent = this.refs[getElementKey(selectedElement)] as BaseSpreadElementComponent;
+      let selectedElementOutline = this.refs[getElementKey(selectedElement, "outline")] as SVGRectElement;
+
+      selectedElementComponent.refs.rootElement.style.transform = translationStyle;
+      selectedElementOutline.style.transform = translationStyle;
+    }
+
+    let selectedElementOutlineOuter = this.refs.selectionOuterNode as SVGRectElement;
+    selectedElementOutlineOuter.style.transform = translationStyle;
+  }
+
+  private onElementDrop(e: DragSessionEvent) {
+    const {canvasNode} = this.refs;
+    canvasNode.classList.remove("dragging");
 
     let scale = this.getScale();
-    let translatedElements: HTMLElement[] = [];
-    let shiftKey = e.shiftKey;
 
-    new DragSession(
-      e,
-      (e: DragSessionEvent) => {
-        this._currentDragSession = e.session;
+    if (e.translation.x != 0 || e.translation.y != 0) {
+      this.app.spreadDispatcher.translate(e.translation.x / scale, e.translation.y / scale);
+    }
 
-        canvasNode.classList.add("dragging");
+    for (let selectedElement of this.selectedElements) {
+      let selectedElementComponent = this.refs[getElementKey(selectedElement)] as BaseSpreadElementComponent;
+      let selectedElementOutline = this.refs[getElementKey(selectedElement, "outline")] as SVGRectElement;
+      selectedElementComponent.refs.rootElement.style.transform = "";
+      selectedElementOutline.style.transform = "";
 
-        if (!this.app.state.spreads.current.elements.isSelected(canvasElement.id)) {
-          this.app.spreadDispatcher.select(!shiftKey, canvasElement.id);
-        }
-
-      },
-      (e: DragSessionEvent) => {
-        translatedElements = DomUtils.querySelectorAll<HTMLElement>(".translatable", canvasNode);
-
-        translatedElements.forEach((el: HTMLElement) => {
-          let translateX = e.translation.x / scale;
-          let translateY = e.translation.y / scale;
-
-          el.style.transform = `translate(${translateX}px, ${translateY}px)`;
-        });
-      },
-      (e: DragSessionEvent) => {
-        this._currentDragSession = null;
-
-        canvasNode.classList.remove("dragging");
-        
-        if (e.translation.x != 0 || e.translation.y != 0) {
-          this.app.spreadDispatcher.translate(e.translation.x / scale, e.translation.y / scale);
-        }
-        
-        translatedElements.forEach((el: HTMLElement) => {
-          el.style.transform = "";
-        });
-        translatedElements = null;
+      if (selectedElement instanceof SpreadTextElement) {
+        DomUtils.redraw(selectedElementComponent.refs.rootElement);
       }
+    }
+
+    let selectedElementOutlineOuter = this.refs.selectionOuterNode as SVGRectElement;
+    selectedElementOutlineOuter.style.transform = "";
+
+    this._currentDragSession = null;
+  }
+
+  private onElementMouseDown(e: React.MouseEvent, element: BaseSpreadType) {
+    // TODO: rethink this boxing/unboxing
+
+    let unboxedEvent = (e as any);
+
+    unboxedEvent.persist();
+
+    if (e.button != 0) return;
+    new DragSession(
+      unboxedEvent as MouseEvent,
+      (e) => this.onElementDragStart(e, element),
+      (e) => this.onElementDragOver(e),
+      (e) => this.onElementDrop(e)
     );
   }
 
-  private onElementMouseUp(e: MouseEvent, canvasElement: CanvasElement) {
-    if (this._currentDragSession != null) {
-      return;
-    }
+  private onElementMouseUp(e: React.MouseEvent, spreadElement: BaseSpreadType) {
+    if (this._currentDragSession != null) return;
+    this.app.spreadDispatcher.select(!e.shiftKey, spreadElement.id);
+  }
 
-    this.app.spreadDispatcher.select(!e.shiftKey, canvasElement.id);
+  private onElementBBoxChange(clientRect: ClientRect, element: BaseSpreadType) {
+    let component = this.refs[getElementKey(element)] as BaseSpreadElementComponent;
+    let componentOutline = this.refs[getElementKey(element, "outline")] as SVGRectElement;
+    let {x, y, width, height} = this.clientRectToSVGRect(clientRect);
+
+    DomUtils.setSVGRectBounds(component.refs.rootElement, x, y, width, height);
+    if (componentOutline) {
+      DomUtils.setSVGRectBounds(componentOutline, x, y, width, height);
+    }
+  }
+
+  private onTextElementChange(e: TextChangeEvent, element: SpreadTextElement) {
+    let scale = this.getScale();
+    let offset = this.getOffset();
+    let {x, y, width, height} = this.clientRectToSVGRect(e.bbox);
+    this.app.spreadDispatcher.editTextElement(element.id, e.text, x, y, width, height);
+  }
+
+  private onTextElementBlur(e: ContentEvent, element: SpreadTextElement) {
+    if (!e.text.replace(/<.*?>/g, "")) {
+      this.app.spreadDispatcher.deleteSelection();
+      return false;
+    }
   }
 
   // Render
@@ -244,34 +350,44 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
     );
   }
 
-  private renderEditableContent(): JSX.Element {
-    return (
-      <g ref="contentNode" className="c-app-canvas--content">
-        {
-          this.props.canvas.elements.map(canvasElement =>
-            <use key={canvasElement.id}
-                 className={`c-app-canvas--content--element ${this.selectedElements.indexOf(canvasElement) > -1 ? "translatable" : ""}`}
-                 xlinkHref={`shapes/${canvasElement.shape}.svg#${canvasElement.shape}`}
-                 x={canvasElement.x} y={canvasElement.y} width={canvasElement.width} height={canvasElement.height}
-                 onMouseDown={(e: MouseEvent) => this.onElementMouseDown(e, canvasElement)}
-                 onMouseUp={(e: MouseEvent) => this.onElementMouseUp(e, canvasElement)} />
-          )
+  private renderElement(element: BaseSpreadType): JSX.Element {
+    let {contentEditable} = this.props;
+
+    let elementId = getElementKey(element);
+    let attributes = {
+      key: elementId,
+      ref: elementId
+    };
+
+    if (contentEditable) {
+      ObjectUtils.assign<{}>(attributes, {
+        onMouseDown: this.onElementMouseDown.bind(this),
+        onMouseUp: this.onElementMouseUp.bind(this),
+        onBBoxChange: this.onElementBBoxChange.bind(this),
+      });
+    }
+
+    switch (element.getType()) {
+      case SpreadStickerElementType:
+        return <SpreadStickerElementComponent element={element as SpreadStickerElement} {...attributes} />
+        
+      case SpreadTextElementType:
+        if (contentEditable) {
+          ObjectUtils.assign<{}>(attributes, {
+            onChange: this.onTextElementChange.bind(this),
+            onBlur: this.onTextElementBlur.bind(this),
+          });
         }
-      </g>
-    );
+        return <SpreadTextElementComponent element={element as SpreadTextElement} {...attributes}/>
+    }
   }
 
   private renderContent(): JSX.Element {
+    let {canvas} = this.props;
+    
     return (
       <g ref="contentNode" className="c-app-canvas--content">
-        {
-          this.props.canvas.elements.map(canvasElement =>
-            <use key={canvasElement.id}
-                 className={`c-app-canvas--content--element ${this.selectedElements.indexOf(canvasElement) > -1 ? "translatable" : ""}`}
-                 xlinkHref={`shapes/${canvasElement.shape}.svg#${canvasElement.shape}`}
-                 x={canvasElement.x} y={canvasElement.y} width={canvasElement.width} height={canvasElement.height} />
-          )
-        }
+        {canvas.elements.map(spreadElement => this.renderElement(spreadElement))}
       </g>
     );
   }
@@ -290,18 +406,20 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
   private renderSelectedElementsOutline(): JSX.Element[] {
     let selectedElements = this.selectedElements;
 
-    return this.props.canvas.elements.map(canvasElement => {
+    return this.props.canvas.elements.map(spreadElement => {
       let styles: React.CSSProperties = {};
 
-      if (selectedElements.indexOf(canvasElement) == -1) {
+      if (selectedElements.indexOf(spreadElement) == -1) {
         styles.display = "none";
       }
 
+      let id = getElementKey(spreadElement, "outline")
+
       return (
-        <rect key={`selection-${canvasElement.id}`} style={styles}
+        <rect key={id} ref={id} style={styles}
               className="c-app-canvas--selection--elements--rect translatable"
-              x={canvasElement.x} y={canvasElement.y} data-id={canvasElement.id}
-              width={canvasElement.width} height={canvasElement.height} />
+              x={spreadElement.x} y={spreadElement.y} data-id={spreadElement.id}
+              width={spreadElement.width} height={spreadElement.height} />
       );
     });
   }
@@ -359,7 +477,7 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
           viewBox={`0 0 ${width} ${height}`}>
         {this.renderDefs()}
         {this.renderBackground()}
-        {this.renderEditableContent()}
+        {this.renderContent()}
         {this.renderOverlay()}
         {this.renderGuidelines()}
         {this.renderSelection()}

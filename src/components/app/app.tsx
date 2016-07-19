@@ -1,12 +1,19 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
+import {playPreset} from "../../demo/presets";
+
 import {BaseAppComponent} from "../../app";
 import {ToolbarComponent} from "./toolbar/toolbar";
 import {NavComponent} from "./nav/nav";
-import {CanvasComponent} from "./canvas/canvas";
+import {SpreadComponent} from "./spread/spread";
 
 class AppComponent extends BaseAppComponent {
+  private onDemoClick() {
+    alert("Comming soon");
+    //playPreset((c: {}) => this.app.store.dispatch(c as any), 1000);
+  }
+
   render() {
     let {spreads} = this.state;
 
@@ -16,7 +23,7 @@ class AppComponent extends BaseAppComponent {
         <div className="c-app--layout--main-column">
           <div className="c-app--work-area">
             <div className="c-app--work-area--target">
-              <CanvasComponent canvas={spreads.current} width={1200} height={600} contentEditable={true} />
+              <SpreadComponent canvas={spreads.current} width={1200} height={600} contentEditable={true} />
             </div>
           </div>
           <NavComponent spreads={spreads} />
