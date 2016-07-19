@@ -333,8 +333,8 @@ export class CanvasComponent extends AppChildComponent<ICanvasComponentProps> {
 
     return (
       <g className="c-app-canvas--overlay">
-        <rect className="c-app-canvas--overlay--shadow--left" x="50%" y="0" width="100" height="100%" fill="url(#overlay--shadow--gradient--left)" />
-        <rect className="c-app-canvas--overlay--shadow--right" x="50%" y="0" width="100" height="100%" fill="url(#overlay--shadow--gradient--right)" />
+        <rect className="c-app-canvas--overlay--shadow--left" x="50%" y="0" width="50" height="100%" fill="url(#overlay--shadow--gradient--left)" />
+        <rect className="c-app-canvas--overlay--shadow--right" x="50%" y="0" width="50" height="100%" fill="url(#overlay--shadow--gradient--right)" />
       </g>
     );
   }

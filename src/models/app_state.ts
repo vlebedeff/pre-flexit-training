@@ -1,9 +1,14 @@
+import {ISerializable} from "../lib/interfaces/serializable";
 import {Model} from "../lib/model";
 import {Canvas} from "../models/canvas";
-import {CanvasCollection} from "../models/canvas/canvas_collection";
+import {CanvasCollection, ISerializedSpreadCollection} from "../models/canvas/canvas_collection";
 import {CanvasElementCollection} from "../models/canvas/canvas_element_collection";
 
-export class AppState extends Model {
+export interface ISerialzedAppState {
+  spreads: ISerializedSpreadCollection;
+}
+
+export class AppState extends Model implements ISerializable<ISerialzedAppState> {
   spreads: CanvasCollection;
 
   constructor(init: boolean = false) {
@@ -17,5 +22,16 @@ export class AppState extends Model {
     let clone = <this>new AppState;
     clone.spreads = this.spreads;
     return clone;
+  }
+
+  serialize() {
+    return {
+      spreads: this.spreads.serialize()
+    }
+  }
+
+  deserialize(serializedValue: ISerialzedAppState) {
+    this.spreads = new CanvasCollection();
+    this.spreads.deserialize(serializedValue.spreads);  
   }
 }

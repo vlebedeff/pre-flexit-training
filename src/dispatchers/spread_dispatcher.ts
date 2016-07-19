@@ -6,6 +6,7 @@ import * as SpreadActions from "../actions/spread_actions";
 
 const ELEMENT_ADD = "spread.element.add";
 const ELEMENTS_SELECT = "spread.elements.select";
+const ELEMENTS_SELECT_ALL = "spread.elements.select.all";
 const SELECTION_TRANSLATE = "spread.selection.move";
 const SELECTION_SEND_FORWARD = "spread.selection.sendForward";
 const SELECTION_SEND_BACKWARD = "spread.selection.sendBackward";
@@ -18,6 +19,7 @@ export class SpreadDispatcher extends Dispatcher<AppState> {
   registerActions() {
     this.registerAction(ELEMENT_ADD, SpreadActions.elementAdd);
     this.registerAction(ELEMENTS_SELECT, SpreadActions.elementsSelect);
+    this.registerAction(ELEMENTS_SELECT_ALL, SpreadActions.elementsSelectAll);
     this.registerAction(SELECTION_TRANSLATE, SpreadActions.selectionTranslate);
     this.registerAction(SELECTION_SEND_FORWARD, SpreadActions.selectionSendForward);
     this.registerAction(SELECTION_SEND_BACKWARD, SpreadActions.selectionSendBackward);
@@ -33,6 +35,10 @@ export class SpreadDispatcher extends Dispatcher<AppState> {
 
   select(exclusive: boolean, ...elements: number[]) {
     this.sendCommand(ELEMENTS_SELECT, <SpreadActions.ElementSelectAction>{elements, exclusive});
+  }
+
+  elementsSelectAll() {
+    this.sendCommand(ELEMENTS_SELECT_ALL);
   }
 
   clearSelection() {

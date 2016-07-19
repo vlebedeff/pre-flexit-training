@@ -46,6 +46,14 @@ export function elementsSelect(state: AppState, payload: ElementSelectAction) {
   });
 }
 
+export function elementsSelectAll(state: AppState, payload: ElementSelectAction) {
+  return updateCurrentSpread(state, newCanvas => {
+    newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
+      newCanvasElements.selectAll();
+    });
+  });
+}
+
 export function selectionClear(state: AppState, payload: AddAction) {
   return updateCurrentSpread(state, newCanvas => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {

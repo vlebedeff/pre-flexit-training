@@ -3,7 +3,7 @@ import {IStore} from "./lib/interfaces/store";
 import {Component, PropTypes} from "react";
 import {ReduxStore} from "./lib/stores/redux";
 
-import {AppState} from "./models/app_state";
+import {AppState, ISerialzedAppState} from "./models/app_state";
 
 import {HistoryProvider} from "./lib/history/history_provider"
 
@@ -16,6 +16,8 @@ import {HotkeysManager} from "./utils/keyboard/hotkeys"
 import * as Keys from "./utils/keyboard/keys"
 import {CTRL, SHIFT, ALT, COMMAND} from "./utils/keyboard/keys"
 
+const appStateLocalStorageKey = "appState";
+
 export class App {
   store: IStore<AppState>;
   historyProvider: HistoryProvider<AppState>;
@@ -24,11 +26,17 @@ export class App {
   historyDispatcher: HistoryDispatcher;
   bookDispatcher: BookDispatcher;
 
-  hotkeys: HotkeysManager;
-  
+  hotkeys: HotkeysManager;  
 
   constructor() {
-    this.store = new ReduxStore<AppState>(new AppState(true));
+    let serializedInitialAppState = window.localStorage.getItem(appStateLocalStorageKey);
+    let initialState = new AppState(true);
+
+    if (serializedInitialAppState) {
+      initialState.deserialize(<ISerialzedAppState>JSON.parse(serializedInitialAppState));
+    }
+
+    this.store = new ReduxStore<AppState>(initialState);
     this.historyProvider = new HistoryProvider<AppState>(this.store);
 
     this.historyDispatcher = new HistoryDispatcher(this.store, this.historyProvider);
@@ -39,6 +47,7 @@ export class App {
 
     this.hotkeys
       .register(Keys.Esc, () => this.spreadDispatcher.clearSelection())
+      .register(COMMAND|Keys.code('a'), () => this.spreadDispatcher.elementsSelectAll())
       .register(Keys.Backspace, () => this.spreadDispatcher.deleteSelection())
       .register(Keys.Up, () => this.spreadDispatcher.translate(0 , -1))
       .register(Keys.Down, () => this.spreadDispatcher.translate(0 , 1))
@@ -58,6 +67,10 @@ export class App {
     this.spreadDispatcher.registerActions();
     this.historyDispatcher.registerActions();
     this.bookDispatcher.registerActions();
+
+    this.store.subscribe(state => {
+      window.localStorage.setItem(appStateLocalStorageKey, JSON.stringify(state.serialize()));
+    });
   }
 
   get state() {
