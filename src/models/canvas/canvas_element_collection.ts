@@ -31,7 +31,11 @@ export class CanvasElementCollection extends List<BaseSpreadType> implements ISe
     return this._selected.map(elementId => this.getById(elementId));
   }
 
-  select(exclusive: boolean, ...elementIds: number[]) {
+  select(exclusive: boolean, ...elements: BaseSpreadType[]) {
+    this.selectIds(exclusive, ...elements.map(element => element.id));
+  }
+
+  selectIds(exclusive: boolean, ...elementIds: number[]) {
     if (exclusive) {
       this._selected = elementIds.slice(0);
     } else {

@@ -48,8 +48,8 @@ export class List<T> extends Model {
     this._array = items;
   }
 
-  push(item: T) {
-    this._array.push(item);
+  push(...items: T[]) {
+    this._array.push(...items);
   }
 
   insert(index: number, item: T) {

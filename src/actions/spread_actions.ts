@@ -50,7 +50,7 @@ export function elementAddSticker(state: AppState, payload: AddStickerAction) {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
       let newElement = newState.createStickerElement(payload.shape, payload.x, payload.y);
       newCanvasElements.push(newElement);
-      newCanvasElements.select(true, newElement.id);
+      newCanvasElements.select(true, newElement);
     });
   });
 }
@@ -60,7 +60,7 @@ export function elementAddText(state: AppState, payload: AddTextAction) {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
       let newElement = newState.createTextElement(payload.x, payload.y, payload.autosize);
       newCanvasElements.push(newElement);
-      newCanvasElements.select(true, newElement.id);
+      newCanvasElements.select(true, newElement);
     });
   });
 }
@@ -80,7 +80,7 @@ export function elementEditText(state: AppState, payload: EditTextAction) {
 export function elementsSelect(state: AppState, payload: ElementSelectAction) {
   return updateCurrentSpread(state, newCanvas => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-      newCanvasElements.select(payload.exclusive, ...payload.elements);
+      newCanvasElements.selectIds(payload.exclusive, ...payload.elements);
     });
   });
 }
@@ -105,6 +105,51 @@ export function selectionDelete(state: AppState) {
   return updateCurrentSpread(state, newCanvas => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
       newCanvasElements.deleteSelection();
+    });
+  });
+}
+
+
+export function copySelection(state: AppState) {
+  return state.update(newState => {
+    newState.clipboard = newState.clipboard.update(newClipboard => {
+      let newElements = newState.spreads.current.elements.getSelected().map(element => element.clone());
+      newClipboard.reset(...newElements);
+    });
+  });
+}
+
+export function cutSelection(state: AppState) {
+  return state.update(newState => {
+    newState.clipboard = newState.clipboard.update(newClipboard => {
+      let newElements = newState.spreads.current.elements.getSelected().map(element => element.clone());
+      newClipboard.reset(...newElements);
+
+      return newState.spreads = newState.spreads.update(newSpreads => {
+        let currentSpread = newSpreads.current;
+        let updatedSpread = currentSpread.update(newSpread => {
+          newSpread.elements = newSpread.elements.update(newSpreadElements => {
+            newSpreadElements.deleteSelection();
+          });
+        });
+        newSpreads.replace(currentSpread, updatedSpread);
+      });
+    });
+  });
+}
+
+export function pasteSelection(state: AppState) {
+  return updateCurrentSpread(state, (newSpread, newState) => {
+    newSpread.elements = newSpread.elements.update(newSpreadElements => {
+      let newElements = newState.clipboard.map(element => {
+        element.translate(10, 10);
+        let newElement = element.clone();
+        newElement.id = newState.getNextId();
+        return newElement;
+      });
+
+      newSpreadElements.push(...newElements);
+      newSpreadElements.select(true, ...newElements);
     });
   });
 }

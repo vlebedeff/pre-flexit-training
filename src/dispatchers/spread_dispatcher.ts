@@ -16,6 +16,9 @@ const SELECTION_BRING_TO_BACK = "spread.selection.bringToBack";
 const SELECTION_CLEAR = "spread.selection.clear";
 const SELECTION_DELETE = "spread.selection.delete";
 const SELECTION_TEXT_ALIGN = "spread.selection.text.align";
+const SELECTION_COPY = "spread.selection.copy";
+const SELECTION_CUT = "spread.selection.cut";
+const SELECTION_PASTE = "spread.selection.paster";
 
 export class SpreadDispatcher extends Dispatcher<AppState> {
   registerActions() {
@@ -32,6 +35,9 @@ export class SpreadDispatcher extends Dispatcher<AppState> {
     this.registerAction(SELECTION_CLEAR, SpreadActions.selectionClear);
     this.registerAction(SELECTION_DELETE, SpreadActions.selectionDelete);
     this.registerAction(SELECTION_TEXT_ALIGN, SpreadActions.selectionTextAlign);
+    this.registerAction(SELECTION_COPY, SpreadActions.copySelection);
+    this.registerAction(SELECTION_CUT, SpreadActions.cutSelection);
+    this.registerAction(SELECTION_PASTE, SpreadActions.pasteSelection);
   }
 
   add(shape: string, x: number, y: number) {
@@ -60,6 +66,18 @@ export class SpreadDispatcher extends Dispatcher<AppState> {
 
   deleteSelection() {
     this.sendCommand(SELECTION_DELETE);
+  }
+
+  copySelection() {
+    this.sendCommand(SELECTION_COPY);
+  }
+
+  cutSelection() {
+    this.sendCommand(SELECTION_CUT);
+  }
+
+  pasteSelection() {
+    this.sendCommand(SELECTION_PASTE);
   }
 
   translate(x: number, y: number) {
