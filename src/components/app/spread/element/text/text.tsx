@@ -23,6 +23,7 @@ export interface IProps extends IBaseProps<SpreadTextElement> {
 }
 
 export class SpreadTextElementComponent extends SpreadElementComponent<IProps> {
+  private _editing: boolean;
   private _initialBBox: ClientRect;
 
   refs: {
@@ -66,8 +67,18 @@ export class SpreadTextElementComponent extends SpreadElementComponent<IProps> {
 
   // Events
 
+  onMouseDown(e: React.MouseEvent) {
+    if (this._editing) return;
+
+    super.onMouseDown(e);
+  }
+
   onDoubleClick(e: React.MouseEvent) {
     this.focus();
+  }
+
+  onContentBlur(e: Event) {
+    this.blur();
   }
 
   onContentInput(e: Event) {
@@ -75,29 +86,6 @@ export class SpreadTextElementComponent extends SpreadElementComponent<IProps> {
 
     if (element.autosize) {
       this.resizeRootElement();
-    }
-  }
-
-  onContentBlur(e: Event) {
-    let {element, onChange, onBlur} = this.props;
-    let {rootElement, contentElement} = this.refs;
-    contentElement.contentEditable = String(false);
-    contentElement.spellcheck = false;
-    this.app.hotkeys.enable();
-
-    if (onBlur) {
-      if (onBlur.call(this, {text: contentElement.innerHTML}, element) === false) {
-        return;
-      }
-    }
-
-    if (element.text != contentElement.innerHTML && onChange) {
-      let event = {
-        text: contentElement.innerHTML,
-        bbox: (element.autosize ? contentElement : rootElement).getBoundingClientRect()
-      } as TextChangeEvent;
-
-      onChange.call(this, event, element);
     }
   }
 
@@ -140,12 +128,37 @@ export class SpreadTextElementComponent extends SpreadElementComponent<IProps> {
     } as ClientRect);
   }
 
+  blur() {
+    let {element, onChange, onBlur} = this.props;
+    let {rootElement, contentElement} = this.refs;
+    contentElement.contentEditable = String(false);
+    contentElement.spellcheck = false;
+    this.app.hotkeys.enable();
+    this._editing = false;
+
+    if (onBlur) {
+      if (onBlur.call(this, {text: contentElement.innerHTML}, element) === false) {
+        return;
+      }
+    }
+
+    if (element.text != contentElement.innerHTML && onChange) {
+      let event = {
+        text: contentElement.innerHTML,
+        bbox: (element.autosize ? contentElement : rootElement).getBoundingClientRect()
+      } as TextChangeEvent;
+
+      onChange.call(this, event, element);
+    }
+  }
+
   focus() {
     let {contentElement} = this.refs;
     contentElement.contentEditable = String(true);
     contentElement.spellcheck = true;
     this.app.hotkeys.disable();
     contentElement.focus();
-    this._initialBBox = contentElement.getBoundingClientRect(); 
+    this._initialBBox = contentElement.getBoundingClientRect();
+    this._editing = true; 
   }
 }

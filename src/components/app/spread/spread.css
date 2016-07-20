@@ -4,6 +4,7 @@
   box-shadow: 0 0 50px 0 rgba(0, 0, 0, .25);
   max-width: 1200px;
   margin: 0 auto;
+  cursor: default;
 
   &.dragging {
     cursor: grabbing;

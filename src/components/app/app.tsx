@@ -10,8 +10,7 @@ import {SpreadComponent} from "./spread/spread";
 
 class AppComponent extends BaseAppComponent {
   private onDemoClick() {
-    alert("Comming soon");
-    //playPreset((c: {}) => this.app.store.dispatch(c as any), 1000);
+    playPreset((c: {}) => this.app.store.dispatch(c as any));
   }
 
   render() {
@@ -21,6 +20,9 @@ class AppComponent extends BaseAppComponent {
       <div className="c-app">
         <ToolbarComponent />
         <div className="c-app--layout--main-column">
+          <div className="c-app--header">
+            <button onClick={this.onDemoClick.bind(this)}>Play Demo</button>
+          </div>
           <div className="c-app--work-area">
             <div className="c-app--work-area--target">
               <SpreadComponent canvas={spreads.current} width={1200} height={600} contentEditable={true} />

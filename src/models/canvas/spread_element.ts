@@ -20,7 +20,7 @@ export abstract class SpreadElement<T extends ISerializedSpreadElement> extends 
   height: number;
   angle: number;
 
-  constructor(public id: number = new Date().getTime()) {
+  constructor(public id: number) {
     super();
   }
 
@@ -38,8 +38,8 @@ export abstract class SpreadElement<T extends ISerializedSpreadElement> extends 
     this.height = height;
   }
 
-  cloneSuper<U extends this>(type: {new(): U}): U {
-    let clone =  <U>new type();
+  cloneSuper<U extends this>(type: {new(id: number): U}): U {
+    let clone =  <U>new type(this.id);
     clone.id = this.id;
     clone.x = this.x;
     clone.y = this.y;

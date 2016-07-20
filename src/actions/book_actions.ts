@@ -5,6 +5,10 @@ export interface SpreadSelectAction {
   spreadIndex: number;
 }
 
+export function reset(state: AppState, payload: SpreadSelectAction) {
+  return new AppState(true);
+}
+
 export function spreadSelect(state: AppState, payload: SpreadSelectAction) {
   return state.update(newState => {
     return newState.spreads = newState.spreads.update(newSpreads => {

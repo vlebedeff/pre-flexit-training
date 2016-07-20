@@ -98,10 +98,10 @@ export class CanvasElementCollection extends List<BaseSpreadType> implements ISe
       let spreadElement: BaseSpreadType;
       switch (item.type) {
         case SpreadStickerElementType:
-          spreadElement = new SpreadStickerElement();
+          spreadElement = new SpreadStickerElement(item.id);
           break;
         case SpreadTextElementType:
-          spreadElement = new SpreadTextElement();
+          spreadElement = new SpreadTextElement(item.id);
           break;
         default:
           throw new Error("Invalid type value of element");

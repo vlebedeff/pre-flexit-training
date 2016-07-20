@@ -33,12 +33,12 @@ export interface AlignTextAction {
   align: TextAlign;
 }
 
-function updateCurrentSpread(state: AppState, updateFn: (spread: Canvas) => void): AppState {
+function updateCurrentSpread(state: AppState, updateFn: (newSpread: Canvas, newState: AppState) => void): AppState {
   return state.update(newState => {
     return newState.spreads = newState.spreads.update(newSpreads => {
       let currentSpread = newSpreads.current;
       let updatedSpread = currentSpread.update(newSpread => {
-        updateFn(newSpread);
+        updateFn(newSpread, newState);
       });
       newSpreads.replace(currentSpread, updatedSpread);
     });
@@ -46,9 +46,9 @@ function updateCurrentSpread(state: AppState, updateFn: (spread: Canvas) => void
 }
 
 export function elementAddSticker(state: AppState, payload: AddStickerAction) {
-  return updateCurrentSpread(state, newCanvas => {
+  return updateCurrentSpread(state, (newCanvas, newState) => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-      let newElement = newCanvas.createStickerElement(payload.shape, payload.x, payload.y);
+      let newElement = newState.createStickerElement(payload.shape, payload.x, payload.y);
       newCanvasElements.push(newElement);
       newCanvasElements.select(true, newElement.id);
     });
@@ -56,9 +56,9 @@ export function elementAddSticker(state: AppState, payload: AddStickerAction) {
 }
 
 export function elementAddText(state: AppState, payload: AddTextAction) {
-  return updateCurrentSpread(state, newCanvas => {
+  return updateCurrentSpread(state, (newCanvas, newState) => {
     newCanvas.elements = newCanvas.elements.update(newCanvasElements => {
-      let newElement = newCanvas.createTextElement(payload.x, payload.y, payload.autosize);
+      let newElement = newState.createTextElement(payload.x, payload.y, payload.autosize);
       newCanvasElements.push(newElement);
       newCanvasElements.select(true, newElement.id);
     });

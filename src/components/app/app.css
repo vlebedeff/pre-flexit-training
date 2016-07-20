@@ -12,11 +12,14 @@
     flex: 1;
     flex-direction: column;
     background: #b5b5b5;
+    position: relative;
   }
 
   &--header {
-    padding: 20px;
+    position: absolute;
+    left: 0; top: 20px; right: 0;
     text-align: center;
+    z-index: 1;
 
     button {
       border: 2px solid #e2a10d;
@@ -25,6 +28,8 @@
       border-radius: 5px;
       font-size: 14px;
       box-shadow: 0 3px 10px rgba(0,0,0,.4);
+      -webkit-user-select: none;
+      user-slect: none;
     }
   }
 

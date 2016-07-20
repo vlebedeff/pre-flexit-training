@@ -1,9 +1,17 @@
 .c-app-nav {
-  height: 100px;
-  padding: 20px 0;
+  position: absolute;
+  left: 0; 
+  bottom: -70px;
+  right: 0;
+  padding-bottom: 20px;
   text-align: center;
+  height: 100px;
   white-space: nowrap;
-  overflow: hidden;
+  transition: bottom .1s; 
+
+  &:hover {
+    bottom: 0;
+  }
 
   &--button {
     display: inline-block;
@@ -13,8 +21,13 @@
     cursor: pointer;
 
     &.active {
+      transform: translateY(0);
       box-shadow: 0 0 20px 0 rgb(79, 128, 255);
       outline: 2px solid rgb(79, 128, 255);
+    }
+
+    svg {
+      pointer-events: none;
     }
   }
 
