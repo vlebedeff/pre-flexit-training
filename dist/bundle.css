@@ -1,0 +1,201 @@
+.c-app {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+}
+.c-app--layout--main-column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background: #b5b5b5;
+  position: relative;
+}
+.c-app--header {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  right: 0;
+  text-align: center;
+  z-index: 1;
+}
+.c-app--header button {
+  border: 2px solid #e2a10d;
+  background: #f7d21f;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 14px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.4);
+  -webkit-user-select: none;
+  user-slect: none;
+}
+.c-app--work-area {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+}
+.c-app--work-area--target {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.c-app-toolbar {
+  width: 50px;
+  background: #eaeaea;
+  box-shadow: 0 0 5px rgba(0, 0, 0, .5);
+  z-index: 1;
+}
+.c-app-toolbar-button {
+  padding: 0px;
+  margin: 0;
+  border: 0 none;
+  display: block;
+  background: transparent;
+  border-bottom: 1px solid #ccc;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  outline: none;
+}
+.c-app-toolbar-button:hover {
+  background: rgba(0, 0, 0, .05);
+}
+.c-app-toolbar-button svg {
+  display: block;
+  width: 50px;
+  height: 50px;
+  pointer-events: none;
+  fill: #d4d4d4;
+  stroke: #666;
+  stroke-width: 6px;
+}
+.c-app-canvas {
+  position: relative;
+  display: block;
+  box-shadow: 0 0 50px 0 rgba(0, 0, 0, .25);
+  max-width: 1200px;
+  margin: 0 auto;
+  cursor: default;
+}
+.c-app-canvas.dragging {
+  cursor: grabbing;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+}
+.c-app-canvas--background {
+  pointer-events: none;
+}
+.c-app-canvas--background--rect {
+  fill: #fff;
+  stroke: none;
+}
+.c-app-canvas--selection {
+  pointer-events: none;
+  //shape-rendering: crispEdges;
+}
+.c-app-canvas--selection--elements {
+  fill: none;
+  stroke: rgb(79, 128, 255);
+  stroke-width: 1;
+}
+.c-app-canvas--selection--outer {
+  fill: none;
+  stroke: rgba(0, 0, 0, .25);
+  stroke-width: 1;
+  stroke-dasharray: 3, 4;
+}
+.c-app-canvas--selection--mouse {
+  fill: rgba(79, 128, 255, .25);
+  stroke: rgb(79, 128, 255);
+}
+.c-app-canvas--overlay {
+  pointer-events: none;
+}
+.c-app-canvas--overlay--shadow--gradient--start {
+  stop-color: rgba(0, 0, 0, .2);
+}
+.c-app-canvas--overlay--shadow--gradient--stop {
+  stop-color: rgba(0, 0, 0, 0);
+}
+.c-app-canvas--overlay--shadow--left {
+  transform: translateX(-50px);
+}
+.c-app-canvas--guidelines {
+  pointer-events: none;
+  stroke: rgba(0, 0, 0, .25);
+  stroke-dasharray: 5 2;
+  stroke-width: 1px;
+}
+.c-app-spread-element {
+
+}
+.c-app-spread-element__text {
+  fill: transparent;
+  -webkit-user-select: none;
+  user-slect: none;
+  overflow: hidden;
+}
+.c-app-spread-element__text--content {
+  line-height: 24px;
+  min-height: 24px;
+  font-size: 16px;
+  font-family: "Open Sans";
+  display: inline-block;
+  white-space: nowrap;
+  outline: none;
+  min-width: 20px;
+}
+.c-app-spread-element__text__paragraph .c-app-spread-element__text--content {
+  width: 100%;
+  height: 100%;
+  white-space: normal;
+  font-size: 14px;
+  color: #666;
+}
+.c-app-spread-element__sticker {
+  
+}
+.c-app-nav {
+  position: absolute;
+  left: 0; 
+  bottom: -70px;
+  right: 0;
+  padding-bottom: 20px;
+  text-align: center;
+  height: 100px;
+  white-space: nowrap;
+  transition: bottom .1s;
+}
+.c-app-nav:hover {
+  bottom: 0;
+}
+.c-app-nav--button {
+  display: inline-block;
+  height: 100%;
+  margin: 0 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, .25);
+  cursor: pointer;
+}
+.c-app-nav--button.active {
+  transform: translateY(0);
+  box-shadow: 0 0 20px 0 rgb(79, 128, 255);
+  outline: 2px solid rgb(79, 128, 255);
+}
+.c-app-nav--button svg {
+  pointer-events: none;
+}
+.c-app-nav .c-app-canvas {
+  height: 100%;
+  display: inline-block;
+  box-sizing: border-box;
+  box-shadow: none;
+}
+
+/*# sourceMappingURL=bundle.css.map*/
