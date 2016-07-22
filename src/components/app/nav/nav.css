@@ -1,15 +1,40 @@
 .c-app-nav {
-  height: 100px;
+  position: absolute;
+  left: 0; 
+  bottom: -70px;
+  right: 0;
   padding-bottom: 20px;
   text-align: center;
+  height: 100px;
   white-space: nowrap;
-  overflow: hidden;;
+  transition: bottom .1s; 
+
+  &:hover {
+    bottom: 0;
+  }
+
+  &--button {
+    display: inline-block;
+    height: 100%;
+    margin: 0 10px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, .25);
+    cursor: pointer;
+
+    &.active {
+      transform: translateY(0);
+      box-shadow: 0 0 20px 0 rgb(79, 128, 255);
+      outline: 2px solid rgb(79, 128, 255);
+    }
+
+    svg {
+      pointer-events: none;
+    }
+  }
 
   .c-app-canvas {
     height: 100%;
     display: inline-block;
-    margin: 0 10px;
     box-sizing: border-box;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, .25);
+    box-shadow: none;
   }
 }

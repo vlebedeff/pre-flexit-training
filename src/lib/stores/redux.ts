@@ -1,6 +1,10 @@
 import * as Redux from "redux";
 import {IStore, IStoreAction} from "./../interfaces/store";
 
+function isDebug() {
+  return location.search.match(/[?&]debug=true(&|$)/);
+}
+
 export class ReduxStore<TState> implements IStore<TState>{
   private _store: Redux.Store<TState>;
   private _actionHandlers: {[actionName: string]: (state: TState, payload: {}) => TState};
@@ -20,7 +24,7 @@ export class ReduxStore<TState> implements IStore<TState>{
       newState = actionHandler(state, action.payload);
     } 
 
-    if (location.search.match(/[?&]debug=true(&|$)/)) {
+    if (isDebug()) {
       (<any>window).statesHistory = (<any>window).statesHistory || [];
       (<[]>(<any>window).statesHistory).push(newState);
     }
@@ -39,6 +43,9 @@ export class ReduxStore<TState> implements IStore<TState>{
   }
 
   dispatch(action: IStoreAction) {
+    if (isDebug()) {
+      console.debug(`${JSON.stringify(action)},`);
+    }
     this._store.dispatch(action);
   }
 

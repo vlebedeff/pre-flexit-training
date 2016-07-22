@@ -3,56 +3,81 @@ import {IStore} from "./lib/interfaces/store";
 import {Component, PropTypes} from "react";
 import {ReduxStore} from "./lib/stores/redux";
 
-import {AppState} from "./models/app_state";
+import {AppState, ISerialzedAppState} from "./models/app_state";
+import {TextAlign} from "./models/canvas/spread_element_text";
 
 import {HistoryProvider} from "./lib/history/history_provider"
 
-import {CanvasDispatcher} from "./dispatchers/canvas_dispatcher";
 import {HistoryDispatcher} from "./dispatchers/history_dispatcher";
+import {BookDispatcher} from "./dispatchers/book_dispatcher";
+import {SpreadDispatcher} from "./dispatchers/spread_dispatcher";
 
 import {HotkeysManager} from "./utils/keyboard/hotkeys"
 
 import * as Keys from "./utils/keyboard/keys"
 import {CTRL, SHIFT, ALT, COMMAND} from "./utils/keyboard/keys"
 
+const appStateLocalStorageKey = "appState";
+
 export class App {
   store: IStore<AppState>;
   historyProvider: HistoryProvider<AppState>;
 
-  canvasDispatcher: CanvasDispatcher;
+  spreadDispatcher: SpreadDispatcher;
   historyDispatcher: HistoryDispatcher;
+  bookDispatcher: BookDispatcher;
 
-  hotkeys: HotkeysManager;
-  
+  hotkeys: HotkeysManager;  
 
   constructor() {
-    this.store = new ReduxStore<AppState>(new AppState(true));
+    let serializedInitialAppState = window.localStorage.getItem(appStateLocalStorageKey);
+    let initialState = new AppState(true);
+
+    if (serializedInitialAppState) {
+      initialState.deserialize(<ISerialzedAppState>JSON.parse(serializedInitialAppState));
+    }
+
+    this.store = new ReduxStore<AppState>(initialState);
     this.historyProvider = new HistoryProvider<AppState>(this.store);
 
-    this.canvasDispatcher = new CanvasDispatcher(this.store);
     this.historyDispatcher = new HistoryDispatcher(this.store, this.historyProvider);
+    this.bookDispatcher = new BookDispatcher(this.store);
+    this.spreadDispatcher = new SpreadDispatcher(this.store);
+    
     this.hotkeys = new HotkeysManager();
 
     this.hotkeys
-      .register(Keys.Esc, () => this.canvasDispatcher.clearSelection())
-      .register(Keys.Backspace, () => this.canvasDispatcher.deleteSelection())
-      .register(Keys.Up, () => this.canvasDispatcher.translate(0 , -1))
-      .register(Keys.Down, () => this.canvasDispatcher.translate(0 , 1))
-      .register(Keys.Left, () => this.canvasDispatcher.translate(-1 , 0))
-      .register(Keys.Right, () => this.canvasDispatcher.translate(1 , 0))
-      .register(SHIFT|Keys.Up, () => this.canvasDispatcher.translate(0 , -10))
-      .register(SHIFT|Keys.Down, () => this.canvasDispatcher.translate(0 , 10))
-      .register(SHIFT|Keys.Left, () => this.canvasDispatcher.translate(-10 , 0))
-      .register(SHIFT|Keys.Right, () => this.canvasDispatcher.translate(10 , 0))
-      .register(ALT|Keys.Up, () => this.canvasDispatcher.sendForward())
-      .register(ALT|Keys.Down, () => this.canvasDispatcher.sendBackward())
-      .register(CTRL|ALT|Keys.Up, () => this.canvasDispatcher.bringToTop())
-      .register(CTRL|ALT|Keys.Down, () => this.canvasDispatcher.bringToBottom())
+      .register(Keys.Esc, () => this.spreadDispatcher.clearSelection())
+      .register(COMMAND|Keys.code('a'), () => this.spreadDispatcher.elementsSelectAll())
+      .register(Keys.Backspace, () => this.spreadDispatcher.deleteSelection())
+      .register(Keys.Up, () => this.spreadDispatcher.translate(0 , -1))
+      .register(Keys.Down, () => this.spreadDispatcher.translate(0 , 1))
+      .register(Keys.Left, () => this.spreadDispatcher.translate(-1 , 0))
+      .register(Keys.Right, () => this.spreadDispatcher.translate(1 , 0))
+      .register(SHIFT|Keys.Up, () => this.spreadDispatcher.translate(0 , -10))
+      .register(SHIFT|Keys.Down, () => this.spreadDispatcher.translate(0 , 10))
+      .register(SHIFT|Keys.Left, () => this.spreadDispatcher.translate(-10 , 0))
+      .register(SHIFT|Keys.Right, () => this.spreadDispatcher.translate(10 , 0))
+      .register(ALT|Keys.Up, () => this.spreadDispatcher.sendForward())
+      .register(ALT|Keys.Down, () => this.spreadDispatcher.sendBackward())
+      .register(CTRL|ALT|Keys.Up, () => this.spreadDispatcher.bringToTop())
+      .register(CTRL|ALT|Keys.Down, () => this.spreadDispatcher.bringToBottom())
+      .register(COMMAND|Keys.code('c'), () => this.spreadDispatcher.copySelection())
+      .register(COMMAND|Keys.code('x'), () => this.spreadDispatcher.cutSelection())
+      .register(COMMAND|Keys.code('v'), () => this.spreadDispatcher.pasteSelection())
       .register(COMMAND|Keys.code('z'), () => this.historyDispatcher.undo())
-      .register(COMMAND|SHIFT|Keys.code('z'), () => this.historyDispatcher.redo());
+      .register(COMMAND|SHIFT|Keys.code('z'), () => this.historyDispatcher.redo())
+      .register(COMMAND|Keys.Up, () => this.spreadDispatcher.textAlign(TextAlign.Center))
+      .register(COMMAND|Keys.Left, () => this.spreadDispatcher.textAlign(TextAlign.Left))
+      .register(COMMAND|Keys.Right, () => this.spreadDispatcher.textAlign(TextAlign.Right));
 
-    this.canvasDispatcher.registerActions();
+    this.spreadDispatcher.registerActions();
     this.historyDispatcher.registerActions();
+    this.bookDispatcher.registerActions();
+
+    this.store.subscribe(state => {
+      window.localStorage.setItem(appStateLocalStorageKey, JSON.stringify(state.serialize()));
+    });
   }
 
   get state() {

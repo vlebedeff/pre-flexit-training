@@ -1,6 +1,15 @@
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-type Stylable = HTMLElement | SVGStylable;
+interface Stylable {
+  style: CSSStyleDeclaration
+}
+
+export interface SVGBaseRectElement extends Stylable {
+  x: SVGAnimatedLength;
+  y: SVGAnimatedLength;
+  width: SVGAnimatedLength;
+  height: SVGAnimatedLength;
+}
 
 export function nodeListToArray<T>(nodeList: NodeList): T[] {
   return <T[]>Array.prototype.slice.call(nodeList);
@@ -31,7 +40,7 @@ export function toggleVisibility(element: Stylable, visible: boolean) {
   (visible ? show : hide)(element);
 }
 
-export function getSVGRectBounds(rect: SVGRectElement): number[] {
+export function getSVGRectBounds(rect: SVGBaseRectElement): number[] {
   return [
     rect.x.baseVal.value,
     rect.y.baseVal.value,
@@ -40,9 +49,15 @@ export function getSVGRectBounds(rect: SVGRectElement): number[] {
   ]
 }
 
-export function setSVGRectBounds(rect: SVGRectElement, x: number, y: number, width: number, height: number) {
+export function setSVGRectBounds(rect: SVGBaseRectElement, x: number, y: number, width: number, height: number) {
   rect.x.baseVal.value = x;
   rect.y.baseVal.value = y;
   rect.width.baseVal.value = width;
   rect.height.baseVal.value = height;
+}
+
+export function redraw(element: Stylable) {
+  // TODO: Find better way to force redraw
+  hide(element);
+  setTimeout(() => show(element), 1);
 }

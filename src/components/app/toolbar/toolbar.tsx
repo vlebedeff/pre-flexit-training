@@ -15,6 +15,8 @@ export class ToolbarComponent extends AppChildComponent<{}> {
         <ButtonComponent shape="sonic" />
         <ButtonComponent shape="slack" />
         <ButtonComponent shape="react" />
+        <ButtonComponent shape="text" />
+        <ButtonComponent shape="paragraph" />
       </div>
     )
   }

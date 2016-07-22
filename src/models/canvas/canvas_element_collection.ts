@@ -1,7 +1,15 @@
+import {ISerializable} from "../../lib/interfaces/serializable";
 import {List} from  "../../lib/model";
-import {CanvasElement} from "./canvas_element";
+import {SpreadStickerElement, ISerializedSpreadStickerElement, SpreadStickerElementType} from "./spread_element_sticker";
+import {SpreadTextElement, ISerializedSpreadTextElement, SpreadTextElementType} from "./spread_element_text";
+import {BaseSpreadType, ISerializedSpreadElement} from "./spread_element";
 
-export class CanvasElementCollection extends List<CanvasElement> {
+export interface ISerializedSpreadElementCollection {
+  items: ISerializedSpreadElement[];
+  selectedItems: number[];
+}
+
+export class CanvasElementCollection extends List<BaseSpreadType> implements ISerializable<ISerializedSpreadElementCollection> {
   private _selected: number[];
 
   constructor(init: boolean = false) {
@@ -15,15 +23,19 @@ export class CanvasElementCollection extends List<CanvasElement> {
     return this._selected.indexOf(elementId) != -1;
   }
 
-  getById(id: number): CanvasElement {
+  getById(id: number): BaseSpreadType {
     return this.find(canvasElement => canvasElement.id == id);
   }
 
-  getSelected(): CanvasElement[] {
+  getSelected(): BaseSpreadType[] {
     return this._selected.map(elementId => this.getById(elementId));
   }
 
-  select(exclusive: boolean, ...elementIds: number[]) {
+  select(exclusive: boolean, ...elements: BaseSpreadType[]) {
+    this.selectIds(exclusive, ...elements.map(element => element.id));
+  }
+
+  selectIds(exclusive: boolean, ...elementIds: number[]) {
     if (exclusive) {
       this._selected = elementIds.slice(0);
     } else {
@@ -39,6 +51,10 @@ export class CanvasElementCollection extends List<CanvasElement> {
     }
   }
 
+  selectAll() {
+    this._selected = this.map(element => element.id);
+  }
+
   clearSelection() {
     this._selected = [];
   }
@@ -48,22 +64,22 @@ export class CanvasElementCollection extends List<CanvasElement> {
     this._selected = [];
   }
 
-  bringToTop(canvasElement: CanvasElement) {
+  bringToTop(canvasElement: BaseSpreadType) {
     this.remove(canvasElement);
     this.push(canvasElement);
   }
 
-  bringToBack(canvasElement: CanvasElement) {
+  bringToBack(canvasElement: BaseSpreadType) {
     this.remove(canvasElement);
     this.insert(0, canvasElement);
   }
 
-  sendForward(canvasElement: CanvasElement) {
+  sendForward(canvasElement: BaseSpreadType) {
     let index = this.remove(canvasElement);
     this.insert(Math.min(index + 1, this.count), canvasElement);
   }
 
-  sendBackward(canvasElement: CanvasElement) {
+  sendBackward(canvasElement: BaseSpreadType) {
     let index = this.remove(canvasElement);
     this.insert(Math.max(index - 1, 0), canvasElement);
   }
@@ -72,5 +88,31 @@ export class CanvasElementCollection extends List<CanvasElement> {
     let clone = <this>super.cloneExtended(CanvasElementCollection);
     clone._selected = [...this._selected]; 
     return clone;
+  }
+
+  serialize() {
+    return {
+      items: this.map(element => element.serialize()),
+      selectedItems: this._selected
+    };
+  }
+
+  deserialize(serializedValue: ISerializedSpreadElementCollection) {
+    this.reset(...serializedValue.items.map(item => {
+      let spreadElement: BaseSpreadType;
+      switch (item.type) {
+        case SpreadStickerElementType:
+          spreadElement = new SpreadStickerElement(item.id);
+          break;
+        case SpreadTextElementType:
+          spreadElement = new SpreadTextElement(item.id);
+          break;
+        default:
+          throw new Error("Invalid type value of element");
+      }
+      spreadElement.deserialize(item);
+      return spreadElement;
+    }));
+    this._selected = serializedValue.selectedItems;
   }
 }
